@@ -1,0 +1,31 @@
+This is a sample code
+[merge]
+	tool = p4merge
+[mergetool "p4merge"]
+	path = C:/Program Files/Perforce/p4merge.exe
+[mergetool]
+	promt = false
+[diff]
+	tool = p4merge
+[difftool "p4merge"]
+	path = C:/Program Files/Perforce/p4merge.exe
+[difftool]
+	prompt = false
+
+composer require vkovic/laravel-commando
+
+// laravel command created by me
+//command created using
+php artisan make:command mysql
+//this will create database from here
+php artisan mysql:createdb schema_name
+
+//below command will create database from .env file
+php artisan db:create <[database_name]>
+
+
+
+https://techsemicolon.github.io/blog/2019/05/30/laravel-validation-required-if-with-unless-all-and-custom-if/
+https://www.csrhymes.com/2019/06/22/using-the-unique-validation-rule-in-laravel-form-request.html
+
+
