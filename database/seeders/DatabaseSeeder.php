@@ -60,8 +60,8 @@ class DatabaseSeeder extends Seeder
         ,'district'=>'24pgs','pin'=>'700122','contact_number'=>'6978456210','whatsapp_number'=>'9163196112',
         'email_id'=>'sukantahui@gmail.com','account_number'=>'9616641644745577']); #2
 
-        Organisation::create(['organisation_name'=>'All India Yuba Computer Saksharata Mission','address'=>'Barrackpore','city'=>'Kolkata'
-        ,'district'=>'24pgs','pin'=>'700121','contact_number'=>'7605887990','whatsapp_number'=>'9163196112',
+        Organisation::create(['organisation_name'=>'All India Yuba Computer Saksharata Mission','address'=>'Barrackpore, Stalin Nagar','city'=>'Kolkata'
+        ,'district'=>'24pgs','pin'=>'700120','contact_number'=>'7605887990','whatsapp_number'=>'9163196112',
         'email_id'=>'aiycsm@gmail.com','account_number'=>'961678987777']); #3
 
        /*  //working Days
@@ -73,6 +73,9 @@ class DatabaseSeeder extends Seeder
 
         User::create(['user_name'=>'Nanda Gopal','mobile1'=>'7605887990','mobile2'=>'9163196112'
         ,'email'=>'ngsutradhar50@gmail.com','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>1,'organisation_id'=>2]);
+
+        User::create(['user_name'=>'Prasun Biswas','mobile1'=>'7605887990','mobile2'=>'9163196112'
+        ,'email'=>'prasunbiswas76@gmail.com','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>1,'organisation_id'=>3]);
 
         //developer
         User::create(['user_name'=>'Sukanta Hui','mobile1'=>'9836444999','mobile2'=>'101'
