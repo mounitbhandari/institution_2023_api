@@ -490,7 +490,50 @@ BEGIN
                   RETURN temp_total_received;
               END;');
 
-       
+              DB::unprepared('
+              DROP FUNCTION IF EXISTS get_total_discount_by_studentregistration_id;
+            CREATE FUNCTION `get_total_discount_by_studentregistration_id`(input_studentregistration bigint) RETURNS double
+                DETERMINISTIC
+            BEGIN
+                  DECLARE temp_total_discount double;
+                  DECLARE temp_transaction_masters_id int;
+                  set temp_total_discount=0;
+                  
+                  select sum(get_total_fees_discount_transaction_id(transaction_masters.id)) into temp_total_discount
+                  from transaction_masters
+                  inner join student_course_registrations ON student_course_registrations.id = transaction_masters.student_course_registration_id
+                  inner join courses ON courses.id = student_course_registrations.course_id
+                  inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
+                  where transaction_masters.student_course_registration_id=input_studentregistration;
+                  if isnull(temp_total_discount) then
+                    set temp_total_discount=0;
+                  end if;
+                  RETURN temp_total_discount;
+              END;');
+
+              DB::unprepared('
+                    DROP FUNCTION IF EXISTS get_curr_month_total_bank;
+                    CREATE FUNCTION `get_curr_month_total_bank`(input_organization_id int) RETURNS double
+                        DETERMINISTIC
+                    BEGIN
+                         DECLARE temp_total_bank double;
+                         set temp_total_bank=0;
+                          select sum(transaction_details.amount) into temp_total_bank FROM transaction_masters
+                         inner join transaction_details on transaction_details.transaction_master_id = transaction_masters.id
+                         where transaction_details.transaction_type_id=1
+                         and transaction_masters.voucher_type_id=4
+                         and transaction_details.ledger_id=2
+                         and month(transaction_masters.transaction_date)=month(curdate())
+                         and transaction_masters.organisation_id=input_organization_id
+                         and year(transaction_masters.transaction_date)=year(curdate());
+                          if isnull(temp_total_bank) then
+                                 set temp_total_bank=0;
+                               end if;
+                                   
+                            RETURN temp_total_bank;
+                       END;');
+
+
     }
 
     public function down()
