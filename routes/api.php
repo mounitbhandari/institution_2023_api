@@ -15,7 +15,7 @@ use App\Http\Controllers\DurationTypeController;
 use App\Http\Controllers\StudentQueryController;
 use App\Http\Controllers\BijoyaRegistrationController;
 use App\Http\Controllers\ReportController;
-
+use App\Http\Controllers\OrganisationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +39,8 @@ Route::get("login",[UserController::class,'authenticationError'])->name('login')
 
 
 Route::post("register",[UserController::class,'register']);
+Route::patch("userUpdate",[UserController::class,'user_update']);
+Route::get("getAllUserList",[UserController::class,'get_all_user_list']);
 
 Route::group(['middleware' => 'auth:sanctum'], function(){
     //All secure URL's
@@ -135,6 +137,13 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
 
     //CourseRegistration
     // nanda gopal api
+    //------------for developer Api ------------------------------
+    Route::post("/organisationSave",[OrganisationController::class, 'organisation_Store']);
+    Route::patch("/organisationUpdate",[OrganisationController::class, 'organisation_update']);
+    Route::get("/getAllorganisation",[OrganisationController::class, 'get_all_organisation_list']);
+    Route::get("/getOrganisationById/{id}",[OrganisationController::class, 'get_organisation_by_id']);
+    Route::get("/getAllUserTypes",[UserController::class, 'get_all_user_types']);
+    //------------- End ----------------------------------------------------
     Route::get("totalActiveStudent/{id}",[StudentCourseRegistrationController::class, 'get_total_active_student']);
     Route::get("totalMonthlyActiveStudent/{id}",[StudentCourseRegistrationController::class, 'get_total_monthly_active_student']);
     Route::get("totalFullCourseActiveStudent/{id}",[StudentCourseRegistrationController::class, 'get_total_full_course_active_student']);
@@ -275,7 +284,11 @@ Route::group(array('prefix' => 'dev'), function() {
         Route::delete("/{id}",[StudentController::class, 'delete']);
     });
 
-//    student_query
+    //Organization
+    Route::group(array('prefix' => 'organisations'), function() {
+        Route::post("/organisationSave",[OrganisationController::class, 'organisationStore']);
+    });
+    //student_query
     Route::post("studentQuery", [StudentQueryController::class, 'save_query']);
 
     //course

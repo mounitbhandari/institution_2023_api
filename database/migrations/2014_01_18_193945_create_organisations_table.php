@@ -17,7 +17,9 @@ return new class extends Migration
             $table->id();
             $table->string('organisation_name',255);
              //for students
-           
+             $table->unsignedBigInteger('state_id');
+             $table ->foreign('state_id')->references('id')->on('states')->onDelete('cascade');
+             
              $table->string('address')->nullable(true);
              $table->string('city',50)->nullable(true);
              $table->string('district',50)->nullable(true);

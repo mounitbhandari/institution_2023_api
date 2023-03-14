@@ -10,6 +10,7 @@ use App\Http\Controllers\ApiController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends ApiController
 {
@@ -26,14 +27,34 @@ class UserController extends ApiController
         $result = $user->tokens()->delete();
         return $this->successResponse($result);
     }
-
+    public function get_all_user_types(){
+        $result = DB::select("select id, user_type_name FROM user_types");
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function user_update(Request $request)
+    {     
+        $user = User::findOrFail($request->input('userId'));
+        $user ->user_name = $request->input('user_name');
+        $user ->email = $request->input('email');
+        $user->password = $request->input('password');
+        $user->mobile1 = $request->input('mobile1');
+        $user->user_type_id= $request->input('user_type_id');
+        $user->organisation_id= $request->input('organisation_id');
+        
+       $user->save();
+        //return $this->successResponse($organisation);
+        return response()->json(['success'=>1,'data'=>$user], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function register(Request $request)
     {
         $user = User::create([
             'email'    => $request->email,
             'password' => $request->password,
             'user_name' => $request->user_name,
-            'user_type_id' => $request->user_type_id
+            'mobile1' => $request->mobile1,
+            'user_type_id' => $request->user_type_id,
+            'organisation_id' => $request->organisation_id
         ]);
 
 //        return response()->json(['success'=>1,'data'=>$user], 200,[],JSON_NUMERIC_CHECK);
@@ -45,7 +66,8 @@ class UserController extends ApiController
             'token' => $token
         ];
 
-        return response($response, 201);
+       // return response($response, 201);
+        return response()->json(['success'=>1,'data'=>$response], 200,[],JSON_NUMERIC_CHECK);
     }
 
 
@@ -75,6 +97,26 @@ class UserController extends ApiController
         return $request->user();
 //        return User::get();
 
+    }
+    public function get_all_user_list()
+    {
+        $result = DB::select("select users.id, 
+        users.user_name, 
+        users.email,
+        users.password, 
+        users.remember_token,
+        users.mobile1,
+        users.mobile2, 
+        user_types.user_type_name,
+        organisations.organisation_name,
+        user_type_id,
+        organisation_id 
+        FROM users
+        inner join user_types ON user_types.id = users.user_type_id
+        inner join organisations ON organisations.id = users.organisation_id
+        order by users.id desc");
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
 
     function getAllUsers(Request $request){
