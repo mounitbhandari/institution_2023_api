@@ -25,6 +25,7 @@ class FeesChargedResource extends JsonResource
 
         return [
             'studentCourseRegistrationId'=>$this->student_course_registration_id,
+            'organisationName'=>$this->organisation_name,
             'feesTotal'=>$this->fees_total,
             'studentName'=>$student->ledger_name,
             'courseName'=>$course->full_name,

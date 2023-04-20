@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 class ReportController extends Controller
 {
+  
     //
     public function get_all_income_report($orgID){
         $result = DB::select("select get_curr_month_total_cash(id) as total_monthly_cash, 

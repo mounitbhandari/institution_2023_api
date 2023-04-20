@@ -138,6 +138,14 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     //CourseRegistration
     // nanda gopal api
     //------------for developer Api ------------------------------
+    Route::get("/deleteTransaction/{id}",[OrganisationController::class, 'delete_transaction']);
+
+    Route::get("/allFeesReceivedDeveloper",[OrganisationController::class, 'get_all_feeReceived_developer']);
+    Route::get("/allFeesChargedDeveloper",[OrganisationController::class, 'get_all_feeCharge_developer']);
+    Route::get("/allOrgDetails",[OrganisationController::class, 'all_org_detail_info']);
+    Route::get("/allOrgIncome",[OrganisationController::class, 'all_org_total_income']);
+    Route::get("/studentCount",[OrganisationController::class, 'count_total_student']);
+    Route::get("/organisationCount",[OrganisationController::class, 'get_count_organisation']);
     Route::post("/organisationSave",[OrganisationController::class, 'organisation_Store']);
     Route::patch("/organisationUpdate",[OrganisationController::class, 'organisation_update']);
     Route::get("/getAllorganisation",[OrganisationController::class, 'get_all_organisation_list']);
