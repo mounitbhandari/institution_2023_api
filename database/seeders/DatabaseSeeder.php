@@ -49,49 +49,8 @@ class DatabaseSeeder extends Seeder
         UserType::create(['user_type_name' => 'Office Staff']);     #7
         UserType::create(['user_type_name' => 'Student']);          #8
 
-        $this->command->info('Adding Organisation');
-        //Organisation::create(['organisation_name'=>'Master Organisation']);  #1
-
-        Organisation::create(['organisation_name'=>'Barrackpore Academy of IT','address'=>'Barrackpore','city'=>'Kolkata'
-        ,'district'=>'24pgs','pin'=>'700120','contact_number'=>'7605887990','whatsapp_number'=>'9163196112',
-        'email_id'=>'ngsutradhar50@gmail.com','account_number'=>'9616641644777']); #1
-
-        Organisation::create(['organisation_name'=>'Ace Info Solution','address'=>'Barrackpore','city'=>'Kolkata'
-        ,'district'=>'24pgs','pin'=>'700122','contact_number'=>'6978456210','whatsapp_number'=>'9163196112',
-        'email_id'=>'sukantahui@gmail.com','account_number'=>'9616641644745577']); #2
-
-        Organisation::create(['organisation_name'=>'All India Yuba Computer Saksharata Mission','address'=>'Barrackpore, Stalin Nagar','city'=>'Kolkata'
-        ,'district'=>'24pgs','pin'=>'700120','contact_number'=>'7605887990','whatsapp_number'=>'9163196112',
-        'email_id'=>'aiycsm@gmail.com','account_number'=>'961678987777']); #3
-
-       /*  //working Days
-        WorkingDays::create(['count_days'=>1,'total_days'=>30,'start_date'=>'2023-01-01'
-        ,'end_date'=>'2023-01-31','description'=>"BAIT",'organisation_id'=>1]); */
-        //owner
-        User::create(['user_name'=>'Tanusree Hui','mobile1'=>'9836444999','mobile2'=>'100'
-        ,'email'=>'owner','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>1,'organisation_id'=>1]);
-
-        User::create(['user_name'=>'Nanda Gopal','mobile1'=>'7605887990','mobile2'=>'9163196112'
-        ,'email'=>'ngsutradhar50@gmail.com','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>1,'organisation_id'=>2]);
-
-        User::create(['user_name'=>'Prasun Biswas','mobile1'=>'7605887990','mobile2'=>'9163196112'
-        ,'email'=>'prasunbiswas76@gmail.com','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>1,'organisation_id'=>3]);
-
-        //developer
-        User::create(['user_name'=>'Sukanta Hui','mobile1'=>'9836444999','mobile2'=>'101'
-            ,'email'=>'developer','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>2,'organisation_id'=>1]);
-
-        //admin
-        User::create(['user_name'=>'Sreeparna Das','mobile1'=>'9836444999','mobile2'=>'102'
-            ,'email'=>'admin','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>3,'organisation_id'=>1]);
-
-        //student
-        User::create(['user_name'=>'Coder Student','mobile1'=>'9836444999','mobile2'=>'108'
-            ,'email'=>'student','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>8,'organisation_id'=>1]);
-
-
-        //storing state
-        State::insert([
+         //storing state
+         State::insert([
             ['state_code'=>0,'state_name'=>'Not applicable'],
             ['state_code'=>1,'state_name'=>'Jammu & Kashmir'],
             ['state_code'=>2,'state_name'=>'Himachal Pradesh'],
@@ -131,6 +90,49 @@ class DatabaseSeeder extends Seeder
             ['state_code'=>36,'state_name'=>'Telangana'],
             ['state_code'=>37,'state_name'=>'Ladak']
         ]);
+
+        $this->command->info('Adding Organisation');
+        //Organisation::create(['organisation_name'=>'Master Organisation']);  #1
+
+        Organisation::create(['organisation_name'=>'Barrackpore Academy of IT','address'=>'Barrackpore','city'=>'Kolkata','state_id'=>20
+        ,'district'=>'24pgs','pin'=>'700120','contact_number'=>'7605887990','whatsapp_number'=>'9163196112',
+        'email_id'=>'ngsutradhar50@gmail.com','account_number'=>'9616641644777']); #1
+
+        Organisation::create(['organisation_name'=>'Ace Info Solution','address'=>'Barrackpore','city'=>'Kolkata','state_id'=>20
+        ,'district'=>'24pgs','pin'=>'700122','contact_number'=>'6978456210','whatsapp_number'=>'9163196112',
+        'email_id'=>'sukantahui@gmail.com','account_number'=>'9616641644745577']); #2
+
+        Organisation::create(['organisation_name'=>'All India Yuba Computer Saksharata Mission','address'=>'Barrackpore, Stalin Nagar','city'=>'Kolkata','state_id'=>20
+        ,'district'=>'24pgs','pin'=>'700120','contact_number'=>'7605887990','whatsapp_number'=>'9163196112',
+        'email_id'=>'aiycsm@gmail.com','account_number'=>'961678987777']); #3
+
+       /*  //working Days
+        WorkingDays::create(['count_days'=>1,'total_days'=>30,'start_date'=>'2023-01-01'
+        ,'end_date'=>'2023-01-31','description'=>"BAIT",'organisation_id'=>1]); */
+        //owner
+        User::create(['user_name'=>'Tanusree Hui','mobile1'=>'9836444999','mobile2'=>'100'
+        ,'email'=>'owner','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>1,'organisation_id'=>1]);
+
+        User::create(['user_name'=>'Nanda Gopal','mobile1'=>'7605887990','mobile2'=>'9163196112'
+        ,'email'=>'ngsutradhar50@gmail.com','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>1,'organisation_id'=>2]);
+
+        User::create(['user_name'=>'Prasun Biswas','mobile1'=>'7605887990','mobile2'=>'9163196112'
+        ,'email'=>'prasunbiswas76@gmail.com','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>1,'organisation_id'=>3]);
+
+        //developer
+        User::create(['user_name'=>'Sukanta Hui','mobile1'=>'9836444999','mobile2'=>'101'
+            ,'email'=>'developer','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>2,'organisation_id'=>1]);
+
+        //admin
+        User::create(['user_name'=>'Sreeparna Das','mobile1'=>'9836444999','mobile2'=>'102'
+            ,'email'=>'admin','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>3,'organisation_id'=>1]);
+
+        //student
+        User::create(['user_name'=>'Coder Student','mobile1'=>'9836444999','mobile2'=>'108'
+            ,'email'=>'student','password'=>"81dc9bdb52d04dc20036dbd8313ed055",'user_type_id'=>8,'organisation_id'=>1]);
+
+
+       
         District::insert([
             ['state_id'=>2,'district_name'=>'Anantnag'],
             ['state_id'=>2,'district_name'=>'Bandipora'],
