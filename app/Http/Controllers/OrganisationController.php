@@ -50,6 +50,46 @@ class OrganisationController extends Controller
         //
     } */
       // Developer
+      public function delete_student_to_course_by_register_id($id){
+        DB::beginTransaction();
+        try{
+             // ------ delete record ---------
+             $result = DB::select("select count(*) as total_record from transaction_details where transaction_master_id in (
+                select id from transaction_masters where transaction_masters.student_course_registration_id='$id')");
+
+                //echo $result[0]->total_record;
+
+                if($result[0]->total_record>0){
+                    $delete_trans_details = DB::select("delete from transaction_details where transaction_master_id in (
+                        select id from transaction_masters where transaction_masters.student_course_registration_id='$id')");
+
+                    $tran_master=TransactionMaster::where('student_course_registration_id',$id)->delete();
+
+                    $tran_studentToCourse=StudentCourseRegistration::where('id',$id)->delete();
+                  
+                    
+                    echo " Deleted successfully";
+                    
+                }else{
+                    echo "No";
+                }
+            
+             //return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+            /* $tran_details=TransactionDetail::where('transaction_master_id',$id)->delete();
+            if($tran_details){
+                $tran_master=TransactionMaster::where('id',$id)->delete();
+            }
+            else{
+                return response()->json(['success'=>0,'data'=>'Sorry Data Not Deleted:'.$id], 200,[],JSON_NUMERIC_CHECK);
+            } */
+            DB::commit();
+        }catch(\Exception $e){
+            DB::rollBack();
+            return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);
+        }
+
+        //return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+      }
       public function delete_transaction($id){
         DB::beginTransaction();
         try{
@@ -61,6 +101,25 @@ class OrganisationController extends Controller
             else{
                 return response()->json(['success'=>0,'data'=>'Sorry Data Not Deleted:'.$id], 200,[],JSON_NUMERIC_CHECK);
             }
+            DB::commit();
+        }catch(\Exception $e){
+            DB::rollBack();
+            return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);
+        }
+
+        return response()->json(['success'=>1,'data'=> 'Deleted Successfully'], 200,[],JSON_NUMERIC_CHECK);
+      }
+
+      public function delete_transaction_details($id){
+        DB::beginTransaction();
+        try{
+             // ------ delete record ---------
+            $tran_details=TransactionDetail::where('id',$id)->delete();
+            if(!$tran_details){
+                return response()->json(['success'=>0,'data'=>'Sorry Data Not Deleted:'.$id], 200,[],JSON_NUMERIC_CHECK);
+            }
+           
+            DB::commit();
         }catch(\Exception $e){
             DB::rollBack();
             return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);

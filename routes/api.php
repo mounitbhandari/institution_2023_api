@@ -138,7 +138,9 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     //CourseRegistration
     // nanda gopal api
     //------------for developer Api ------------------------------
-    Route::get("/deleteTransaction/{id}",[OrganisationController::class, 'delete_transaction']);
+    Route::delete("/deleteStudentToCourse/{id}",[OrganisationController::class, 'delete_student_to_course_by_register_id']);
+    Route::delete("/deleteTransactionDetails/{id}",[OrganisationController::class, 'delete_transaction_details']);
+    Route::delete("/deleteTransaction/{id}",[OrganisationController::class, 'delete_transaction']);
 
     Route::get("/allFeesReceivedDeveloper",[OrganisationController::class, 'get_all_feeReceived_developer']);
     Route::get("/allFeesChargedDeveloper",[OrganisationController::class, 'get_all_feeCharge_developer']);
