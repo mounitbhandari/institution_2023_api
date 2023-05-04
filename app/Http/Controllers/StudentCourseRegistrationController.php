@@ -121,11 +121,11 @@ class StudentCourseRegistrationController extends Controller
     {
         //$courseRegistration= StudentCourseRegistration::get();
          $result = DB::select("select student_course_registrations.ledger_id as studentId,
-         ledgers.ledger_name as studentName
+         ledgers.ledger_name as studentName,ledgers.qualification
          from student_course_registrations
          inner join ledgers on ledgers.id = student_course_registrations.ledger_id
-         where student_course_registrations.organisation_id='$orgID'
-         group by student_course_registrations.ledger_id,ledgers.ledger_name"); 
+         where student_course_registrations.organisation_id='$orgID' and ledgers.is_student=1
+         group by student_course_registrations.ledger_id,ledgers.ledger_name,ledgers.qualification"); 
 
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }

@@ -53,59 +53,56 @@ class OrganisationController extends Controller
       public function delete_student_to_course_by_register_id($id){
         DB::beginTransaction();
         try{
-             // ------ delete record ---------
-             $result = DB::select("select count(*) as total_record from transaction_details where transaction_master_id in (
-                select id from transaction_masters where transaction_masters.student_course_registration_id='$id')");
 
-                //echo $result[0]->total_record;
+            $tran_studentToCourse= StudentCourseRegistration::find($id);
+            if(!empty($tran_studentToCourse)){
+                //1 delete all received fees from transaction_details  where reference_transaction_master_id;
+                $student_course_registration=DB::select("delete from transaction_details where transaction_master_id in (select id from transaction_masters where reference_transaction_master_id in(
+                    select id from transaction_masters where transaction_masters.student_course_registration_id='$id'))");
+                
+                //2 delete all received fees from transaction_master  where reference_transaction_master_id;
+                $transaction_masters_registration=DB::select("delete from transaction_masters where reference_transaction_master_id in(
+                    select id from transaction_masters where transaction_masters.student_course_registration_id='$id')");
 
-                if($result[0]->total_record>0){
-                    $delete_trans_details = DB::select("delete from transaction_details where transaction_master_id in (
-                        select id from transaction_masters where transaction_masters.student_course_registration_id='$id')");
+                //3 delete all fees charged from transaction_details  where reference_transaction_master_id;
+                    $transaction_details=DB::select("delete from transaction_details where transaction_master_id in (
+                    select id from transaction_masters where transaction_masters.student_course_registration_id='$id')");
 
-                    $tran_master=TransactionMaster::where('student_course_registration_id',$id)->delete();
-
-                    $tran_studentToCourse=StudentCourseRegistration::where('id',$id)->delete();
-                  
-                    
-                    echo " Deleted successfully";
-                    
-                }else{
-                    echo "No";
-                }
-            
-             //return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-            /* $tran_details=TransactionDetail::where('transaction_master_id',$id)->delete();
-            if($tran_details){
-                $tran_master=TransactionMaster::where('id',$id)->delete();
+                //4 delete all fees charged from transaction_master  where transaction_master_id;
+                $tran_master=TransactionMaster::where('student_course_registration_id',$id)->delete();
+               
+                //5 delete StudentCourseRegistration from student_course_registrations  where id;
+                $tran_studentToCourse=StudentCourseRegistration::where('id',$id)->delete();
+               
             }
-            else{
-                return response()->json(['success'=>0,'data'=>'Sorry Data Not Deleted:'.$id], 200,[],JSON_NUMERIC_CHECK);
-            } */
+           
+            
             DB::commit();
         }catch(\Exception $e){
             DB::rollBack();
             return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);
         }
 
-        //return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        return response()->json(['success'=>1,'data'=> 'Deleted Successfully'], 200,[],JSON_NUMERIC_CHECK);
       }
       public function delete_transaction($id){
         DB::beginTransaction();
         try{
-             // ------ delete record ---------
-            $tran_details=TransactionDetail::where('transaction_master_id',$id)->delete();
-            if($tran_details){
+            $transactionMaster= TransactionMaster::find($id);
+            if(!empty($transactionMaster)){
+                $tran_details=TransactionDetail::where('transaction_master_id',$id)->delete();
+                //$tran_details=DB::select("delete from transaction_details where transaction_master_id='$id'");
+
                 $tran_master=TransactionMaster::where('id',$id)->delete();
+               // $tran_master=DB::select("delete from transaction_masters where id='$id'");
+               
             }
-            else{
-                return response()->json(['success'=>0,'data'=>'Sorry Data Not Deleted:'.$id], 200,[],JSON_NUMERIC_CHECK);
-            }
-            DB::commit();
+        DB::commit();  
         }catch(\Exception $e){
-            DB::rollBack();
+           DB::rollBack();
             return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);
         }
+        
 
         return response()->json(['success'=>1,'data'=> 'Deleted Successfully'], 200,[],JSON_NUMERIC_CHECK);
       }
