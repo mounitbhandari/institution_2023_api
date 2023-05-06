@@ -46,6 +46,13 @@ class UserController extends ApiController
         //return $this->successResponse($organisation);
         return response()->json(['success'=>1,'data'=>$user], 200,[],JSON_NUMERIC_CHECK);
     }
+    public function change_password(Request $request){
+        $user = User::findOrFail($request->input('userId'));
+        $user->password = $request->input('password');
+        $user->save();
+        //return $this->successResponse($organisation);
+        return response()->json(['success'=>1,'data'=>$user], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function register(Request $request)
     {
         $user = User::create([

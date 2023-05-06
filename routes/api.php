@@ -40,6 +40,7 @@ Route::get("login",[UserController::class,'authenticationError'])->name('login')
 
 Route::post("register",[UserController::class,'register']);
 Route::patch("userUpdate",[UserController::class,'user_update']);
+Route::patch("changePassword",[UserController::class,'change_password']);
 Route::get("getAllUserList",[UserController::class,'get_all_user_list']);
 
 Route::group(['middleware' => 'auth:sanctum'], function(){
