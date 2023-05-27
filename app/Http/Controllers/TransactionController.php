@@ -15,10 +15,166 @@ use App\Models\WorkingDay;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class TransactionController extends ApiController
 {
     //----- Nanda gopal code -------------_
+
+    public function delete_adv_adjustment_received($id){
+        DB::beginTransaction();
+        try{
+            $transactionMaster= TransactionMaster::find($id);
+            if(!empty($transactionMaster)){
+                $tran_details=TransactionDetail::where('transaction_master_id',$id)->delete();
+                //$tran_details=DB::select("delete from transaction_details where transaction_master_id='$id'");
+
+                $tran_master=TransactionMaster::where('id',$id)->delete();
+               // $tran_master=DB::select("delete from transaction_masters where id='$id'");
+               
+            }
+        DB::commit();  
+        }catch(\Exception $e){
+           DB::rollBack();
+            return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);
+        }
+        return response()->json(['success'=>1,'data'=> 'Deleted Successfully'], 200,[],JSON_NUMERIC_CHECK);
+      }
+    public function get_adv_adjustment_received_master($orgID){
+        $result = TransactionMaster::
+        join('transaction_details', 'transaction_details.transaction_master_id', '=', 'transaction_masters.id')
+        ->join('student_course_registrations', 'student_course_registrations.id', '=', 'transaction_masters.student_course_registration_id')
+        ->join('courses', 'courses.id', '=', 'student_course_registrations.course_id')
+        ->join('ledgers', 'ledgers.id', '=', 'student_course_registrations.ledger_id')
+        ->where('transaction_masters.reference_received_transaction_master_id', '>', 0)
+        ->where('transaction_details.transaction_type_id', '=', 1)
+        ->where('transaction_masters.organisation_id', '=', $orgID)
+        ->where(DB::raw('get_total_received_by_studentregistration(transaction_masters.student_course_registration_id)- get_total_discount_by_studentregistration_id(transaction_masters.student_course_registration_id)'),'>',0)
+        ->select('student_course_registration_id'
+        ,'transaction_masters.reference_received_transaction_master_id'
+        ,'ledgers.ledger_name'
+        ,'courses.full_name'
+        , DB::raw('sum(transaction_details.amount) as total_amount')
+        ) 
+        -> groupBy('transaction_masters.reference_received_transaction_master_id','transaction_masters.student_course_registration_id',
+        'ledgers.ledger_name','courses.full_name')
+        ->orderBy('transaction_masters.reference_received_transaction_master_id', 'DESC')
+        ->get();
+        foreach ($result as $row) {
+            $row->setAttribute('adv_fees_received_details', $this->get_adv_adjustment_received_details($row->reference_received_transaction_master_id));
+        }  
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);     
+    
+    }
+
+    public function get_adv_adjustment_received_details($id){
+        $result = DB::select("select transaction_masters.id,
+        transaction_masters.reference_received_transaction_master_id,
+        transaction_masters.transaction_date,
+        transaction_masters.comment,
+        transaction_details.amount
+        from transaction_masters
+        inner join transaction_details on transaction_details.transaction_master_id = transaction_masters.id
+        inner join student_course_registrations ON student_course_registrations.id = transaction_masters.student_course_registration_id
+        inner join courses ON courses.id = student_course_registrations.course_id
+        inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
+        where reference_received_transaction_master_id>0 and transaction_details.transaction_type_id=1
+        and transaction_masters.reference_received_transaction_master_id='$id'");
+
+        return $result;
+       //return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    
+    }
+    public function get_edit_adv_received($id){
+        $result = DB::select("select ledgers.id,
+        transaction_masters.student_course_registration_id,
+        transaction_masters.id as transaction_masters_id, 
+        transaction_details.ledger_id, 
+        transaction_details.amount,
+        transaction_masters.comment,
+        transaction_masters.transaction_date
+        from transaction_masters
+        inner join transaction_details on transaction_details.transaction_master_id = transaction_masters.id
+        inner join student_course_registrations ON student_course_registrations.id = transaction_masters.student_course_registration_id
+        inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
+        where transaction_details.transaction_type_id=1 
+        and transaction_masters.id='$id'");
+
+        //return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    
+    }
+    public function advanced_received_fees_details_by_studentToCourse_id($id){
+        $result = DB::select("select get_advanced_received_by_studentregistration(id) as total_advanced,
+        get_advanced_received_adjustment(id) as received_advanced,
+        get_advanced_received_by_studentregistration(id)-get_advanced_received_adjustment(id) as advanced_due
+        FROM student_course_registrations
+        where id='$id'");
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function get_advanced_received_history_by_studentToCourse_id($id){
+        $result = DB::select("select student_course_registrations.id,
+        transaction_masters.id as master_id,
+        ledgers.billing_name,
+        ledgers.whatsapp_number,
+        courses.full_name,
+        transaction_details.amount,
+        transaction_masters.transaction_date,
+        transaction_masters.transaction_number,
+        transaction_masters.voucher_type_id,
+        transaction_masters.comment,
+        get_advanced_received_by_studentregistration(student_course_registrations.id) as total_advanced,
+        get_advanced_received_adjustment(student_course_registrations.id) as received_advanced,
+        get_advanced_received_by_studentregistration(student_course_registrations.id)-get_advanced_received_adjustment(student_course_registrations.id) as advanced_due
+          from transaction_masters
+              inner join transaction_details on transaction_details.transaction_master_id = transaction_masters.id
+              inner join student_course_registrations ON student_course_registrations.id = transaction_masters.student_course_registration_id
+              inner join courses ON courses.id = student_course_registrations.course_id
+              inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
+                where transaction_masters.reference_received_transaction_master_id>0 and transaction_details.transaction_type_id=1
+                and transaction_masters.voucher_type_id=4
+                and transaction_masters.student_course_registration_id='$id'");
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function get_advanced_received_history($orgID){
+        $result = DB::select("select transaction_masters.id,
+        transaction_masters.transaction_date,
+        ledgers.ledger_name,
+        courses.full_name,
+        transaction_masters.student_course_registration_id,
+        transaction_masters.comment,
+        transaction_details.amount,
+        get_advanced_received_adjustment(transaction_masters.student_course_registration_id) as advanced_received,
+        (transaction_details.amount-get_advanced_received_adjustment_by_tran_id(transaction_masters.student_course_registration_id,transaction_masters.id)) as adv_due
+        from transaction_masters
+        inner join transaction_details on transaction_details.transaction_master_id = transaction_masters.id
+        inner join student_course_registrations ON student_course_registrations.id = transaction_masters.student_course_registration_id
+        inner join courses ON courses.id = student_course_registrations.course_id
+        inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
+        where transaction_masters.voucher_type_id=10 and transaction_details.transaction_type_id=1 and
+        transaction_masters.organisation_id='$orgID'");
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function advanced_received_fees_detatils($orgID){
+        $result = DB::select("select transaction_masters.id,
+        transaction_masters.transaction_date,
+        ledgers.ledger_name,
+        courses.full_name,
+        transaction_masters.student_course_registration_id,
+        transaction_masters.comment,
+        transaction_details.amount,
+        get_advanced_received_adjustment_by_tran_id(transaction_masters.student_course_registration_id,transaction_masters.id) as advanced_received,
+        (transaction_details.amount-get_advanced_received_adjustment_by_tran_id(transaction_masters.student_course_registration_id,transaction_masters.id)) as adv_due
+        from transaction_masters
+        inner join transaction_details on transaction_details.transaction_master_id = transaction_masters.id
+        inner join student_course_registrations ON student_course_registrations.id = transaction_masters.student_course_registration_id
+        inner join courses ON courses.id = student_course_registrations.course_id
+        inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
+        where transaction_masters.voucher_type_id=10 and transaction_details.transaction_type_id=1
+        and (transaction_details.amount-get_advanced_received_adjustment_by_tran_id(transaction_masters.student_course_registration_id,transaction_masters.id))>0
+        and transaction_masters.organisation_id='$orgID'");
+
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function get_count_working_days(){
         $result=DB::select("select user_id,count_days,total_days,description,start_date,end_date,description,inforce,DATEDIFF(end_date,curdate()) AS date_difference from working_days");
        //$count_days=$result[0]->count_days;
@@ -370,6 +526,7 @@ class TransactionController extends ApiController
         ->where('student_course_registration_id', '=', $id)
         ->where('transaction_masters.organisation_id', '=', $orgID)
         ->where('transaction_details.transaction_type_id', '=',2)
+        ->where('transaction_masters.voucher_type_id', '=',9)
         ->select('student_course_registration_id'
         ,'transaction_masters.id'
         ,'transaction_masters.transaction_date'
@@ -450,6 +607,7 @@ class TransactionController extends ApiController
                         trans_master2.student_course_registration_id, 
                                 trans_master1.id as transaction_master_id,
                                 trans_master1.reference_transaction_master_id,
+                                trans_master1.reference_received_transaction_master_id,
                                 trans_master1.comment,
                                 table1.transaction_number,
                                 table1.transaction_date, 
@@ -506,6 +664,7 @@ class TransactionController extends ApiController
         ->where('transaction_masters.id', '=', $id)
         ->where('transaction_masters.organisation_id', '=', $orgID)
         ->where('transaction_details.transaction_type_id', '=', 2)
+        ->where('transaction_masters.voucher_type_id', '=',9)
         ->select(
         'transaction_masters.id',
         'ledgers.ledger_name',
@@ -1196,7 +1355,312 @@ class TransactionController extends ApiController
 
         return response()->json(['success'=>1,'monthly_fees_charged_count'=>$monthly_fees_charged_count,'notional_monthly_fees_charge_count'=>$notional_monthly_fees_charge_count,'data'=>new TransactionMasterResource($result_array['transaction_master'])], 200,[],JSON_NUMERIC_CHECK);
     }
+    //Update advanced_fees_received
+    public function update_advanced_fees_received($id,Request $request)
+     {
 
+         $input=($request->json()->all());
+         $input_transaction_master=(object)($input['transactionMaster']);
+         $input_transaction_details=($input['transactionDetails']);
+
+         DB::beginTransaction();
+         try{
+             $result_array=array();
+
+             // ------ delete record ---------
+             $tran_details=TransactionDetail::where('transaction_master_id',$id)->delete();
+             if(!$tran_details){
+                return response()->json(['success'=>1,'data'=>'Sorry Data Not Deleted:'.$id], 200,[],JSON_NUMERIC_CHECK);
+             }
+             //adding Zeros before number
+
+             //creating sale bill number
+
+
+             //saving transaction master
+             //$transaction_master= new TransactionMaster();
+             //$transaction_master->voucher_type_id = 9; // 9 is the voucher_type_id in voucher_types table for Fees Charged Journal Voucher
+             //$transaction_master->transaction_number = $transaction_number;
+
+
+             $transaction_master=TransactionMaster::find($id);
+             if($input_transaction_master->transactionDate){
+                $transaction_master->transaction_date = $input_transaction_master->transactionDate;
+             }
+             if($transaction_master->student_course_registration_id){
+                $transaction_master->student_course_registration_id = $input_transaction_master->studentCourseRegistrationId;
+             }     
+             if($input_transaction_master->comment){
+                $transaction_master->comment = $input_transaction_master->comment;
+             }
+             $transaction_master->save();
+
+             $result_array['transaction_master']=$transaction_master;
+             $transaction_details=array();
+             foreach($input_transaction_details as $transaction_detail){
+                 $detail = (object)$transaction_detail;
+                 $td = new TransactionDetail();
+                 $td->transaction_master_id = $transaction_master->id;
+                 $td->ledger_id = $detail->ledgerId;
+                 $td->transaction_type_id = $detail->transactionTypeId;
+                 $td->amount = $detail->amount;
+                 $td->save();
+                 $transaction_details[]=$td;
+             }
+             $result_array['transaction_details']=$transaction_details;
+             DB::commit();
+ 
+         }catch(\Exception $e){
+             DB::rollBack();
+             return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);
+         }
+ 
+         return response()->json(['success'=>1,'data'=>new TransactionMasterResource($result_array['transaction_master'])], 200,[],JSON_NUMERIC_CHECK);
+     }
+    //fees Advanced received
+    public function save_advanced_fees_received(Request $request)
+    {
+        $input=($request->json()->all());
+        $validator = Validator::make($input,[
+            'transactionMaster' => 'required',
+            'transactionDetails' => ['required',function($attribute, $value, $fail){
+                $dr=0;
+                $cr=0;
+                foreach ($value as $v ){
+                    //if transaction type id is incorrect
+                    if(!($v['transactionTypeId']==1 || $v['transactionTypeId']==2)){
+                        return $fail("Transaction type id is incorrect");
+                    }
+
+                    //checking debit and credit equality
+                    if($v['transactionTypeId']==1){
+                        $dr=$dr+$v['amount'];
+                    }
+                    if($v['transactionTypeId']==2){
+                        $cr=$cr+$v['amount'];
+                    }
+                }
+                //if debit and credit are not equal will through error
+                if($dr!=$cr){
+                    $fail("As per accounting rule Debit({$dr})  and Credit({$cr}) should be same");
+                }
+            }],
+        ]);
+        if($validator->fails()){
+            return response()->json(['success'=>0,'data'=>null,'error'=>$validator->messages()], 200,[],JSON_NUMERIC_CHECK);
+        }
+
+        $input=($request->json()->all());
+        $input_transaction_master=(object)($input['transactionMaster']);
+        $input_transaction_details=($input['transactionDetails']);
+
+        //validation for transaction master
+      
+
+
+        if ($validator->fails()) {
+            return response()->json(['position'=>1,'success'=>0,'data'=>null,'error'=>$validator->messages()], 406,[],JSON_NUMERIC_CHECK);
+        }
+
+        //details verification
+        //validation
+       
+        DB::beginTransaction();
+        try{
+            $result_array=array();
+            $accounting_year = get_accounting_year($input_transaction_master->transactionDate);
+            $voucher="Advanced Fees Received";
+            $customVoucher=CustomVoucher::where('voucher_name','=',$voucher)->where('accounting_year',"=",$accounting_year)->first();
+            if($customVoucher) {
+                //already exist
+                $customVoucher->last_counter = $customVoucher->last_counter + 1;
+                $customVoucher->save();
+            }else{
+                //fresh entry
+                $customVoucher= new CustomVoucher();
+                $customVoucher->voucher_name=$voucher;
+                $customVoucher->accounting_year= $accounting_year;
+                $customVoucher->last_counter=1;
+                $customVoucher->delimiter='-';
+                $customVoucher->prefix='ARPT';
+                $customVoucher->save();
+            }
+            //adding Zeros before number
+            $counter = str_pad($customVoucher->last_counter,5,"0",STR_PAD_LEFT);
+
+            //creating sale bill number
+            $transaction_number = $customVoucher->prefix.'-'.$counter."-".$accounting_year;
+            $result_array['transaction_number']=$transaction_number;
+
+            //saving transaction master
+            $transaction_master= new TransactionMaster();
+            $transaction_master->voucher_type_id = 10; // 10 is the voucher_type_id in voucher_types table for Advanced Receipt voucher
+            $transaction_master->transaction_number = $transaction_number;
+            $transaction_master->transaction_date = $input_transaction_master->transactionDate;
+            $transaction_master->student_course_registration_id = $input_transaction_master->studentCourseRegistrationId;
+            $transaction_master->fees_year = $input_transaction_master->feesYear;
+            $transaction_master->fees_month = $input_transaction_master->feesMonth;
+            $transaction_master->comment = $input_transaction_master->comment;
+            $transaction_master->organisation_id = $input_transaction_master->organisationId;
+            $transaction_master->save();
+            $result_array['transaction_master']=$transaction_master;
+            $transaction_details=array();
+            foreach($input_transaction_details as $transaction_detail){
+                $detail = (object)$transaction_detail;
+                $td = new TransactionDetail();
+                $td->transaction_master_id = $transaction_master->id;
+                $td->ledger_id = $detail->ledgerId;
+                $td->transaction_type_id = $detail->transactionTypeId;
+                $td->amount = $detail->amount;
+                $td->save();
+                $transaction_details[]=$td;
+            }
+            $result_array['transaction_details']=$transaction_details;
+            DB::commit();
+
+        }catch(\Exception $e){
+            DB::rollBack();
+            return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);
+        }
+
+        return response()->json(['success'=>1,'data'=>new TransactionMasterResource($result_array['transaction_master'])], 200,[],JSON_NUMERIC_CHECK);
+    }
+     //Advanced fees received Adjustment
+     public function save_advanced_fees_received_adjustment(Request $request)
+     {
+         $input=($request->json()->all());
+ 
+         $validator = Validator::make($input,[
+             'transactionMaster' => 'required',
+             'transactionDetails' => ['required',function($attribute, $value, $fail){
+                 $dr=0;
+                 $cr=0;
+                 foreach ($value as $v ){
+                     //if transaction type id is incorrect
+                     if(!($v['transactionTypeId']==1 || $v['transactionTypeId']==2)){
+                         return $fail("Transaction type id is incorrect");
+                     }
+ 
+                     //checking debit and credit equality
+                     if($v['transactionTypeId']==1){
+                         $dr=$dr+$v['amount'];
+                     }
+                     if($v['transactionTypeId']==2){
+                         $cr=$cr+$v['amount'];
+                     }
+                 }
+                 //if debit and credit are not equal will through error
+                 if($dr!=$cr){
+                     $fail("As per accounting rule Debit({$dr})  and Credit({$cr}) should be same");
+                 }
+             }],
+         ]);
+         if($validator->fails()){
+             return response()->json(['success'=>0,'data'=>null,'error'=>$validator->messages()], 200,[],JSON_NUMERIC_CHECK);
+         }
+ 
+         $input=($request->json()->all());
+         $input_transaction_master=(object)($input['transactionMaster']);
+         $input_transaction_details=($input['transactionDetails']);
+ 
+         //validation for transaction master
+         $rules = array(
+             'userId'=>'required|exists:users,id',
+             'transactionDate' => 'bail|required|date_format:Y-m-d',
+             'referenceTransactionMasterId'=>['required','exists:transaction_masters,id',
+                 function($attribute, $value, $fail){
+                     $TM = TransactionMaster::find($value);
+                     if(!$TM){
+                         return $fail($value.' no such transactions exists');
+                     }
+                     if($TM->voucher_type_id!=9){
+                         return $fail($value.' this is not a Fees Entry');
+                     }
+                 }]
+         );
+         $messages = array(
+             'transactionDate.required'=>'Transaction Date is required',
+             'transactionDate.date_format'=>'Date format should be yyyy-mm-dd',
+         );
+ 
+         $validator = Validator::make($input['transactionMaster'],$rules,$messages );
+ 
+ 
+         if ($validator->fails()) {
+             return response()->json(['position'=>1,'success'=>0,'data'=>null,'error'=>$validator->messages()], 406,[],JSON_NUMERIC_CHECK);
+         }
+ 
+         //details verification
+         //validation
+         $rules = array(
+             "*.transactionTypeId"=>["required","in:1,2"]
+         );
+         $validator = Validator::make($input['transactionDetails'],$rules,$messages );
+         if ($validator->fails()) {
+             return response()->json(['position'=>1,'success'=>0,'data'=>null,'error'=>$validator->messages()], 406,[],JSON_NUMERIC_CHECK);
+         }
+         DB::beginTransaction();
+         try{
+             $result_array=array();
+             $accounting_year = get_accounting_year($input_transaction_master->transactionDate);
+             $voucher="Fees Received Adjustment";
+             $customVoucher=CustomVoucher::where('voucher_name','=',$voucher)->where('accounting_year',"=",$accounting_year)->first();
+             if($customVoucher) {
+                 //already exist
+                 $customVoucher->last_counter = $customVoucher->last_counter + 1;
+                 $customVoucher->save();
+             }else{
+                 //fresh entry
+                 $customVoucher= new CustomVoucher();
+                 $customVoucher->voucher_name=$voucher;
+                 $customVoucher->accounting_year= $accounting_year;
+                 $customVoucher->last_counter=1;
+                 $customVoucher->delimiter='-';
+                 $customVoucher->prefix='RPTA';
+                 $customVoucher->save();
+             }
+             //adding Zeros before number
+             $counter = str_pad($customVoucher->last_counter,5,"0",STR_PAD_LEFT);
+ 
+             //creating sale bill number
+             $transaction_number = $customVoucher->prefix.'-'.$counter."-".$accounting_year;
+             $result_array['transaction_number']=$transaction_number;
+ 
+             //saving transaction master
+             $transaction_master= new TransactionMaster();
+             $transaction_master->voucher_type_id = 4; // 4 is the voucher_type_id in voucher_types table for Receipt voucher
+             $transaction_master->transaction_number = $transaction_number;
+             $transaction_master->transaction_date = $input_transaction_master->transactionDate;
+             $transaction_master->fees_year = $input_transaction_master->feesYear;
+             $transaction_master->fees_month = $input_transaction_master->feesMonth;
+             $transaction_master->student_course_registration_id = $input_transaction_master->studentCourseRegistrationId;
+             $transaction_master->reference_transaction_master_id = $input_transaction_master->referenceTransactionMasterId;
+             $transaction_master->reference_received_transaction_master_id = $input_transaction_master->referenceReceivedTransactionMasterId;
+             $transaction_master->comment = $input_transaction_master->comment;
+             $transaction_master->organisation_id = $input_transaction_master->organisationId;
+             $transaction_master->save();
+             $result_array['transaction_master']=$transaction_master;
+             $transaction_details=array();
+             foreach($input_transaction_details as $transaction_detail){
+                 $detail = (object)$transaction_detail;
+                 $td = new TransactionDetail();
+                 $td->transaction_master_id = $transaction_master->id;
+                 $td->ledger_id = $detail->ledgerId;
+                 $td->transaction_type_id = $detail->transactionTypeId;
+                 $td->amount = $detail->amount;
+                 $td->save();
+                 $transaction_details[]=$td;
+             }
+             $result_array['transaction_details']=$transaction_details;
+             DB::commit();
+ 
+         }catch(\Exception $e){
+             DB::rollBack();
+             return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);
+         }
+ 
+         return response()->json(['success'=>1,'data'=>new TransactionMasterResource($result_array['transaction_master'])], 200,[],JSON_NUMERIC_CHECK);
+     }
     //fees received
     public function save_fees_received(Request $request)
     {
@@ -1422,7 +1886,23 @@ class TransactionController extends ApiController
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
     public function get_month_student_list($orgID){
-      
+      //public static $m;
+       //foreach ($request->product_id as $key => $product_id)
+       //,DB::raw('ADDDATE(max(transaction_masters.transaction_date),INTERVAL DAY(LAST_DAY(max(transaction_masters.transaction_date))) DAY) as transaction_date')
+       /* $currentDateTime = Carbon::now();
+        $newDateTime = Carbon::now()->addDays(3);
+          //$currentDateTime = new Carbon($x->transaction_date);
+        //$m=$x->transaction_date->addDays(5);
+        //$trdate = Carbon::$currentDateTime->addDays(3);
+        print_r($currentDateTime);
+        print_r($newDateTime); */
+        //$currentDateTime = Carbon::now()->addDays(3);
+        /* echo 'Original:'.$x->transaction_date.'<br>';
+        echo '--------------------------'.'<br>';
+        $current = Carbon::create($x->transaction_date);
+        $trialExpires = $current->addDays($x->DaysInMonth);
+        echo 'Add days:'.$trialExpires.'<br>'; */
+
         $result = TransactionMaster::
         join('transaction_details', 'transaction_details.transaction_master_id', '=', 'transaction_masters.id')
        ->join('student_course_registrations', 'student_course_registrations.id', '=', 'transaction_masters.student_course_registration_id')
@@ -1437,7 +1917,8 @@ class TransactionController extends ApiController
        ,DB::raw('student_course_registrations.ledger_id as student_id')
        ,'ledgers.ledger_name'
        ,'courses.full_name'
-       ,DB::raw('ADDDATE(max(transaction_masters.transaction_date),INTERVAL DAY(LAST_DAY(max(transaction_masters.transaction_date))) DAY) as transaction_date')
+       ,DB::raw('CURDATE() as fee_charge_date')
+       ,DB::raw('max(transaction_masters.transaction_date) as transaction_date')
        ,DB::raw('max(transaction_masters.fees_month) as  fees_month')
        ,DB::raw('max(transaction_masters.fees_year) as fees_year')
        ,DB::raw('month(CURDATE()) as currmonth')
@@ -1448,33 +1929,148 @@ class TransactionController extends ApiController
        )
        -> groupBy('transaction_masters.student_course_registration_id','courses.full_name','student_course_registrations.ledger_id','ledgers.ledger_name')
        ->get(); 
-
-       //->orHaving(DB::raw('year(CURDATE())'), '>=', DB::raw('max(transaction_masters.fees_year)'))
-        /* $result = DB::select("select student_course_registrations.ledger_id as student_id,
-        transaction_masters.student_course_registration_id,
-        max(ledgers.ledger_name) as ledger_name,
-        max(courses.full_name) as full_name,
-        max(transaction_masters.transaction_date) as transaction_date,
-        max(transaction_details.amount) as amount,
-        month(max(transaction_masters.transaction_date)) as tran_month,
-        month(CURDATE())-max(transaction_masters.fees_month) as diffMonth,
-        max(transaction_masters.fees_month) as  fees_month,
-        max(transaction_masters.fees_year) as fees_year,
-        month(CURDATE()) as currmonth,
-        year(CURDATE()) as curryear,
-        courses.fees_mode_type_id
-        from transaction_masters
-        inner join transaction_details on transaction_details.transaction_master_id = transaction_masters.id
-        inner join student_course_registrations ON student_course_registrations.id = transaction_masters.student_course_registration_id
-        inner join courses ON courses.id = student_course_registrations.course_id
-        inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
-        where transaction_details.ledger_id=9
-        and courses.fees_mode_type_id=1
-        and transaction_masters.organisation_id=2
-        group by transaction_masters.student_course_registration_id,ledgers.ledger_name,courses.full_name
-        having month(CURDATE())>max(transaction_masters.fees_month)
-        and year(CURDATE())=max(transaction_masters.fees_year)
-        or (year(CURDATE())>=max(transaction_masters.fees_year));");  */
+      
+      
        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function get_month_student_list_testing($orgID){
+      
+       $result = TransactionMaster::
+       join('transaction_details', 'transaction_details.transaction_master_id', '=', 'transaction_masters.id')
+      ->join('student_course_registrations', 'student_course_registrations.id', '=', 'transaction_masters.student_course_registration_id')
+      ->join('courses', 'courses.id', '=', 'student_course_registrations.course_id')
+      ->join('ledgers', 'ledgers.id', '=', 'student_course_registrations.ledger_id')
+      ->where('transaction_details.ledger_id','=',9)
+      ->where('courses.fees_mode_type_id','=',1)
+      ->where('transaction_masters.organisation_id', '=', $orgID)
+      ->having(DB::raw('TIMESTAMPDIFF(MONTH, max(transaction_masters.transaction_date), CURDATE())'),'>',0)
+      ->orderBy('transaction_masters.fees_month','desc')
+      ->select('transaction_masters.student_course_registration_id'
+      ,DB::raw('student_course_registrations.ledger_id as student_id')
+      ,'ledgers.ledger_name'
+      ,'courses.full_name'
+      ,DB::raw('CURDATE() as fee_charge_date')
+      ,DB::raw('max(transaction_masters.transaction_date) as transaction_date')
+      ,DB::raw('max(transaction_masters.fees_month) as  fees_month')
+      ,DB::raw('max(transaction_masters.fees_year) as fees_year')
+      ,DB::raw('month(CURDATE()) as currmonth')
+      ,DB::raw('year(CURDATE()) as curryear')
+      ,DB::raw('max(transaction_details.amount) as amount')
+      ,DB::raw('DAY(LAST_DAY(max(transaction_masters.transaction_date))) as DaysInMonth')
+      ,DB::raw('TIMESTAMPDIFF(MONTH, max(transaction_masters.transaction_date), CURDATE()) as monthDiff')
+      )
+      -> groupBy('transaction_masters.student_course_registration_id','courses.full_name','student_course_registrations.ledger_id','ledgers.ledger_name')
+      ->get(); 
+      
+    
+       return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function save_all_student_monthly_fees_charge($orgID)
+    {
+       
+
+        DB::beginTransaction();
+        try{
+           
+            // fatching all student due fees charge
+            $result = TransactionMaster::
+            join('transaction_details', 'transaction_details.transaction_master_id', '=', 'transaction_masters.id')
+            ->join('student_course_registrations', 'student_course_registrations.id', '=', 'transaction_masters.student_course_registration_id')
+            ->join('courses', 'courses.id', '=', 'student_course_registrations.course_id')
+            ->join('ledgers', 'ledgers.id', '=', 'student_course_registrations.ledger_id')
+            ->where('transaction_details.ledger_id','=',9)
+            ->where('courses.fees_mode_type_id','=',1)
+            ->where('transaction_masters.organisation_id', '=', $orgID)
+            ->having(DB::raw('TIMESTAMPDIFF(MONTH, max(transaction_masters.transaction_date), CURDATE())'),'>',0)
+            ->orderBy('transaction_masters.fees_month','desc')
+            ->select('transaction_masters.student_course_registration_id'
+            ,DB::raw('student_course_registrations.ledger_id as student_id')
+            ,'ledgers.ledger_name'
+            ,'courses.full_name'
+            ,DB::raw('CURDATE() as fee_charge_date')
+            ,DB::raw('max(transaction_masters.transaction_date) as transaction_date')
+            ,DB::raw('max(transaction_masters.fees_month) as  fees_month')
+            ,DB::raw('max(transaction_masters.fees_year) as fees_year')
+            ,DB::raw('month(CURDATE()) as currmonth')
+            ,DB::raw('year(CURDATE()) as curryear')
+            ,DB::raw('max(transaction_details.amount) as amount')
+            ,DB::raw('DAY(LAST_DAY(max(transaction_masters.transaction_date))) as DaysInMonth')
+            ,DB::raw('TIMESTAMPDIFF(MONTH, max(transaction_masters.transaction_date), CURDATE()) as monthDiff')
+            )
+            -> groupBy('transaction_masters.student_course_registration_id','courses.full_name','student_course_registrations.ledger_id','ledgers.ledger_name')
+            ->get(); 
+            //saving transaction master
+        foreach($result as $x){
+            for($y=0;$y<$x->monthDiff;$y++){
+               $nextMonth=(($x->fees_month)+($y+1));
+            //---------------------- Generate Transaction NO ----------------
+            $result_array=array();
+            $accounting_year = get_accounting_year($x->transaction_date);
+            $voucher="Fees Charged";
+            $customVoucher=CustomVoucher::where('voucher_name','=',$voucher)->where('accounting_year',"=",$accounting_year)->first();
+            if($customVoucher) {
+                //already exist
+                $customVoucher->last_counter = $customVoucher->last_counter + 1;
+                $customVoucher->save();
+            }else{
+                //fresh entry
+                $customVoucher= new CustomVoucher();
+                $customVoucher->voucher_name=$voucher;
+                $customVoucher->accounting_year= $accounting_year;
+                $customVoucher->last_counter=1;
+                $customVoucher->delimiter='-';
+                $customVoucher->prefix='FEES';
+                $customVoucher->save();
+            }
+            //adding Zeros before number
+            $counter = str_pad($customVoucher->last_counter,5,"0",STR_PAD_LEFT);
+
+            //creating sale bill number
+            $transaction_number = $customVoucher->prefix.'-'.$counter."-".$accounting_year;
+            $result_array['transaction_number']=$transaction_number;
+        //------------------------------ End of code ---------------------
+      /*   $current = Carbon::create($x->transaction_date);
+        $tranNextDate = $current->addDays($x->DaysInMonth); */
+            $transaction_master= new TransactionMaster();
+            $transaction_master->voucher_type_id = 9; // 9 is the voucher_type_id in voucher_types table for Fees Charged Journal Voucher
+            $transaction_master->transaction_number = $transaction_number;
+            $transaction_master->transaction_date = $x->fee_charge_date;
+            $transaction_master->student_course_registration_id = $x->student_course_registration_id;
+            $transaction_master->comment = "Auto geneate fees";
+            $transaction_master->fees_year = $x->curryear;
+            $transaction_master->fees_month =$nextMonth;
+            $transaction_master->organisation_id = $orgID;
+            $transaction_master->save();
+            $result_array['transaction_master']=$transaction_master;
+            $transaction_details=array();
+            /* foreach($input_transaction_details as $transaction_detail){ */
+                //$detail = (object)$transaction_detail;
+                $td = new TransactionDetail();
+                $td->transaction_master_id = $transaction_master->id;
+                $td->ledger_id = 9;
+                $td->transaction_type_id = 2;
+                $td->amount = $x->amount;
+                $td->save();
+                $transaction_details[]=$td;
+            //} 
+           // $detail = (object)$transaction_detail;
+                $td1 = new TransactionDetail();
+                $td1->transaction_master_id = $transaction_master->id;
+                $td1->ledger_id = $x->student_id;
+                $td1->transaction_type_id = 1;
+                $td1->amount = $x->amount;
+                $td1->save();
+                $transaction_details1[]=$td1;
+        }
+    }
+            $result_array['transaction_details']=$transaction_details1;
+            DB::commit();
+
+        }catch(\Exception $e){
+            DB::rollBack();
+            return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);
+        }
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        //return response()->json(['success'=>1,'monthly_fees_charged_count'=>$monthly_fees_charged_count,'notional_monthly_fees_charge_count'=>$notional_monthly_fees_charge_count,'data'=>new TransactionMasterResource($result_array['transaction_master'])], 200,[],JSON_NUMERIC_CHECK);
     }
 }

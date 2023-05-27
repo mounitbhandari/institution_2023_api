@@ -129,6 +129,20 @@ class StudentCourseRegistrationController extends Controller
 
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
+    public function getAdvRegisterStudent($orgID)
+    {
+        //$courseRegistration= StudentCourseRegistration::get();
+         $result = DB::select("select student_course_registrations.ledger_id as studentId,
+         ledgers.ledger_name as studentName,ledgers.qualification
+         from student_course_registrations
+         inner join ledgers on ledgers.id = student_course_registrations.ledger_id
+         inner join courses ON courses.id = student_course_registrations.course_id
+         where student_course_registrations.organisation_id='$orgID' and ledgers.is_student=1
+         and courses.fees_mode_type_id=1
+         group by student_course_registrations.ledger_id,ledgers.ledger_name,ledgers.qualification"); 
+
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function getStudentToCourseRegistration($orgID)
     {
         $result = DB::select("select distinct ledgers.ledger_name,

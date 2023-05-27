@@ -161,6 +161,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     //-------------------
     Route::post("studentToCourseRegistrationDetails",[StudentCourseRegistrationController::class, 'getStudentToCourseRegistrationDetails']);
 
+    Route::get("advRegisterStudent/{id}",[StudentCourseRegistrationController::class, 'getAdvRegisterStudent']);
     Route::get("registerStudent/{id}",[StudentCourseRegistrationController::class, 'getRegisterStudent']);
     Route::post("FeesModeTypeById",[StudentCourseRegistrationController::class, 'getFeesModeTypeById']);
     Route::post("CourseDetailsById",[StudentCourseRegistrationController::class, 'getCourseDetailsById']);
@@ -199,7 +200,14 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
         Route::post("getFeesByLedgerId",[TransactionController::class, 'get_fees_by_ledger_id']);
 
         //Get all Fees charge
-        
+        //All Advanced Received URL
+        Route::get("/getEditAdvReceived/{id}",[TransactionController::class, 'get_edit_adv_received']);
+
+        Route::get("/getAdvancedInfo/{id}",[TransactionController::class, 'advanced_received_fees_details_by_studentToCourse_id']);
+        Route::get("/getAllAdvancedDetails/{id}",[TransactionController::class, 'advanced_received_fees_detatils']);
+        Route::get("/getAllAdvancedReceivedHistory/{id}",[TransactionController::class, 'get_advanced_received_history']);
+        Route::get("/getAllAdvancedReceivedHistoryById/{id}",[TransactionController::class, 'get_advanced_received_history_by_studentToCourse_id']);
+
         Route::get("/getOrganization/{id}",[TransactionController::class, 'get_organization_details_by_id']);
         Route::post("/getFeesReceived",[TransactionController::class, 'get_fees_received_details_by_registration_id']);
         Route::post("/getFeeCharge",[TransactionController::class, 'get_feeCharge_by_id']);
@@ -232,20 +240,36 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
          // fee Received Start-------
         Route::get("/feesChargedReceivedDue/{id}",[TransactionController::class, 'get_feescharge_received_due_list_by_id']);
         Route::get("/getMonthlyStudent/{id}",[TransactionController::class, 'get_month_student_list']);
+        Route::get("/getMonthlyStudentTesting/{id}",[TransactionController::class, 'get_month_student_list_testing']);
+
+        Route::delete("/deleteAdvAdjustmentReceived/{id}",[TransactionController::class, 'delete_adv_adjustment_received']);
+        Route::get("/getAdvancedReceivedAdjustmentMaster/{id}",[TransactionController::class, 'get_adv_adjustment_received_master']);
         // End Nanda gopal code api
         //saving fees charged
 
 
 
         Route::post("/feesCharged",[TransactionController::class, 'save_fees_charge']);
+        
 
         //saving monthly fees charged
         Route::post("/monthlyFeesCharged",[TransactionController::class, 'save_monthly_fees_charge']);
+        Route::get("/monthlyAllFeesCharged/{id}",[TransactionController::class, 'save_all_student_monthly_fees_charge']);
 
         Route::post("/feesDiscountCharged",[TransactionController::class, 'save_fees_discount_charge']);
 
         //saving fees received
         Route::post("/feesReceived",[TransactionController::class, 'save_fees_received']);
+
+
+        //saving fees received in Adjustment
+        Route::post("/feesReceivedAdvancedAdjustment",[TransactionController::class, 'save_advanced_fees_received_adjustment']);
+
+        //saving fees received in Advanced
+        Route::post("/feesReceivedAdvanced",[TransactionController::class, 'save_advanced_fees_received']);
+
+        //Update fees received in Advanced
+        Route::patch("/updateAdvancedFeesReceived/{id}",[TransactionController::class, 'update_advanced_fees_received']);
 
         //update fees received
         Route::patch("/updateFeesReceived/{id}",[TransactionController::class, 'update_fees_received']);
