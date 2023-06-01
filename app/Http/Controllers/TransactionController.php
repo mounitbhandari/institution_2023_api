@@ -100,7 +100,7 @@ class TransactionController extends ApiController
         where transaction_details.transaction_type_id=1 
         and transaction_masters.id='$id'");
 
-        //return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     
     }
     public function advanced_received_fees_details_by_studentToCourse_id($id){
