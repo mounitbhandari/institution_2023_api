@@ -16,7 +16,7 @@ use App\Http\Controllers\StudentQueryController;
 use App\Http\Controllers\BijoyaRegistrationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\OrganisationController;
-
+use App\Http\Controllers\CourseFeesController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -118,6 +118,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     //Route::get("courses/{id}",[CourseController::class, 'index_by_id']);
     Route::post("courses",[CourseController::class, 'store']);
     Route::patch("courses",[CourseController::class, 'update']);
+    Route::patch("coursesUpdateTest",[CourseController::class, 'update']);
 
 
 

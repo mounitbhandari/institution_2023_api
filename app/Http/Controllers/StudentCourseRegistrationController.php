@@ -66,7 +66,6 @@ class StudentCourseRegistrationController extends Controller
         $orgID = $request->input('organisationId');
         $id = $request->input('id');
 
-        
         $result = DB::select("select courses.fees_mode_type_id, 
         fees_mode_types.fees_mode_type_name,
         courses.course_code,
@@ -75,12 +74,32 @@ class StudentCourseRegistrationController extends Controller
         courses.course_duration,
         courses.description,
         courses.duration_type_id,
-        duration_types.duration_name
+        duration_types.duration_name,
+        if(table1.id,table1.id,0) as course_fees_id,
+         if(table1.fees_amount,table1.fees_amount,0) as fees_amount 
         from courses
         inner join duration_types ON duration_types.id = courses.duration_type_id
         inner join fees_mode_types ON fees_mode_types.id = courses.fees_mode_type_id
-        where courses.id = '$id' AND organisation_id ='$orgID'");
+        left outer join (select id, course_id, fees_amount from course_fees where inforce='1') as table1
+        on table1.course_id=courses.id
+       where courses.id='$id' AND courses.organisation_id ='$orgID'");
        
+         /* $result = DB::select("select courses.fees_mode_type_id, 
+         fees_mode_types.fees_mode_type_name,
+         courses.course_code,
+         courses.short_name,
+         courses.full_name,
+         courses.course_duration,
+         courses.description,
+         courses.duration_type_id,
+         duration_types.duration_name,
+         if(course_fees.fees_amount,course_fees.fees_amount,0) as fees_amount
+         from courses
+         inner join duration_types ON duration_types.id = courses.duration_type_id
+         inner join fees_mode_types ON fees_mode_types.id = courses.fees_mode_type_id
+         left outer join course_fees on course_fees.course_id = courses.id
+        where courses.id = '$id' AND courses.organisation_id ='$orgID'"); */
+
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
         /* ---------------------------------- */
        /*  $result = DB::table('courses')

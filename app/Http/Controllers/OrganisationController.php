@@ -303,7 +303,7 @@ class OrganisationController extends Controller
         states.state_name,
         opening_balance
         from organisations
-        inner join states on organisations.id = states.id
+        inner join states on organisations.state_id = states.id
         order by organisations.id desc");
         
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
