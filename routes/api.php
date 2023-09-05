@@ -73,6 +73,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
         // এখানে সকলকেই দেখাবে, যাদের কোর্স দেওয়া হয়েছে ও যাদের দেওয়া হয়নি সবাইকেই
         Route::get("/{id}", [StudentController::class, 'index']);
         Route::get("/studentId/{id}", [StudentController::class, 'get_student_by_id']);
+        Route::get("/studentProfileId/{id}", [StudentController::class, 'get_student_profile_by_id']);
 
         // get any Ledger by Ledger group id
         
@@ -153,6 +154,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::post("/organisationSave",[OrganisationController::class, 'organisation_Store']);
     Route::patch("/organisationUpdate",[OrganisationController::class, 'organisation_update']);
     Route::get("/getAllorganisation",[OrganisationController::class, 'get_all_organisation_list']);
+    Route::get("/getAllstudent",[OrganisationController::class, 'get_all_student_list']);
     Route::get("/getOrganisationById/{id}",[OrganisationController::class, 'get_organisation_by_id']);
     Route::get("/getAllUserTypes",[UserController::class, 'get_all_user_types']);
     //------------- End ----------------------------------------------------
@@ -208,6 +210,8 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
         Route::get("/getAllAdvancedDetails/{id}",[TransactionController::class, 'advanced_received_fees_detatils']);
         Route::get("/getAllAdvancedReceivedHistory/{id}",[TransactionController::class, 'get_advanced_received_history']);
         Route::get("/getAllAdvancedReceivedHistoryById/{id}",[TransactionController::class, 'get_advanced_received_history_by_studentToCourse_id']);
+        Route::get("/getAllAdvancedReceivedByLedgerId/{id}",[TransactionController::class, 'get_advanced_received_history_by_ledger_id']);
+
 
         Route::get("/getOrganization/{id}",[TransactionController::class, 'get_organization_details_by_id']);
         Route::post("/getFeesReceived",[TransactionController::class, 'get_fees_received_details_by_registration_id']);
@@ -289,6 +293,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::get('/reportStudentBirthday/{id}',[ReportController::class,'get_student_birthday_report']);
     Route::get('/reportUpcomingDueList/{id}',[ReportController::class,'get_upcoming_due_list_report']);
     Route::get('/reportStudentToCourseRegistrationList/{id}',[ReportController::class,'get_student_to_course_registration_report']);
+    Route::get('/reportStudentToCourseRegistrationListLedgerId/{id}',[ReportController::class,'get_student_to_course_registration_report_by_ledger_id']);
     Route::post('/getAllIncomeListReport',[ReportController::class,'get_all_income_list_report']);
     // END REPORT PART
 

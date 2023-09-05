@@ -32,6 +32,10 @@ class CreateUsersTable extends Migration
             $table->bigInteger('organisation_id')->unsigned()->default(1);
             $table ->foreign('organisation_id')->references('id')->on('organisations');
 
+              // create ledger Foreign Key
+           
+              $table->bigInteger('ledger_id')->unsigned()->nullable(true);
+              $table ->foreign('ledger_id')->references('id')->on('ledgers');
 
             $table->tinyInteger('inforce')->default(1);
             $table->timestamps();

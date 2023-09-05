@@ -111,6 +111,35 @@ class ReportController extends Controller
 
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
+    public function get_student_to_course_registration_report_by_ledger_id($ledgerId)
+    {
+        //$courseRegistration= StudentCourseRegistration::get();
+         $result = DB::table('student_course_registrations')
+            ->join('courses', 'courses.id', '=', 'student_course_registrations.course_id')
+            ->join('ledgers', 'ledgers.id', '=', 'student_course_registrations.ledger_id')
+            ->where('ledgers.id', '=', $ledgerId)
+            ->where('ledgers.is_student', '=', 1)
+            ->orderBy('student_course_registrations.id','desc')
+            ->select('student_course_registrations.id', 
+            'student_course_registrations.ledger_id',
+            'student_course_registrations.course_id',
+            'student_course_registrations.discount_allowed',
+            'student_course_registrations.joining_date',
+            'student_course_registrations.effective_date',
+            'student_course_registrations.actual_course_duration',
+            'student_course_registrations.duration_type_id',
+            'ledgers.ledger_name',
+            'courses.full_name',
+            'ledgers.whatsapp_number',
+            DB::raw('if(student_course_registrations.is_completed,"Completed","Not Completed") as is_completed'),
+            DB::raw('get_total_course_fees_by_studentregistration(student_course_registrations.id) as total_course_fees'),
+            DB::raw('get_total_received_by_studentregistration(student_course_registrations.id) as total_received'),
+            DB::raw('get_total_due_by_student_registration_id(student_course_registrations.id) as total_due')
+             )
+            ->get(); 
+
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function get_all_income_list_report(Request $request)
     {
         $startDate = $request->input('startDate');

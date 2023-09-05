@@ -154,6 +154,27 @@ class TransactionController extends ApiController
         transaction_masters.organisation_id='$orgID'");
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
+    public function get_advanced_received_history_by_ledger_id($id){
+        $result = DB::select("select transaction_masters.id,
+        transaction_masters.transaction_date,
+        transaction_masters.voucher_type_id,
+        ledgers.id as ledger_id,
+        ledgers.ledger_name,
+        courses.full_name,
+        transaction_masters.student_course_registration_id,
+        transaction_masters.comment,
+        transaction_details.amount,
+        get_advanced_received_adjustment(transaction_masters.student_course_registration_id) as advanced_received,
+        (transaction_details.amount-get_advanced_received_adjustment_by_tran_id(transaction_masters.student_course_registration_id,transaction_masters.id)) as adv_due
+        from transaction_masters
+        inner join transaction_details on transaction_details.transaction_master_id = transaction_masters.id
+        inner join student_course_registrations ON student_course_registrations.id = transaction_masters.student_course_registration_id
+        inner join courses ON courses.id = student_course_registrations.course_id
+        inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
+        where transaction_masters.voucher_type_id=10 and transaction_details.transaction_type_id=1 and
+        ledgers.id='$id'");
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function advanced_received_fees_detatils($orgID){
         $result = DB::select("select transaction_masters.id,
         transaction_masters.transaction_date,

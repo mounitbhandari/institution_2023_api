@@ -27,6 +27,7 @@ class LoginResource extends JsonResource
             'userName' => $this->user_name,
             'userTypeId' => $this->user_type_id,
             'organisationId'=>$this->organisation_id,
+            'ledgerId'=>$this->ledger_id,
             'userTypeName' => $this->user_type->user_type_name,
             'token' => $this->token,
             'organisation' => new OrganisationResource($this->organisation)

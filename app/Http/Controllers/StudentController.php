@@ -112,6 +112,29 @@ class StudentController extends ApiController
         }
     }
 
+    public function get_student_profile_by_id($id)
+    {
+        $result = DB::select("select ledgers.id, 
+        ledgers.episode_id,
+        ledgers.ledger_name,
+        ledgers.dob, 
+        ledgers.address,
+        ledgers.pin, 
+        ledgers.whatsapp_number,
+        ledgers.email_id,
+        ledgers.qualification,
+        organisations.organisation_name,
+        organisations.address as organisationAddress,
+        organisations.email_id as organisationEmail,
+        organisations.pin as organisationPin,
+        organisations.whatsapp_number as organisationContact
+        FROM ledgers
+        inner join organisations ON organisations.id = ledgers.organisation_id
+        where ledgers.is_student=1
+        and ledgers.id='$id'");
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+
     public function get_courses_by_id($id){
         try {
             $courses = Student::where('id', $id)->where('is_student','=',1)->firstOrFail()->courses;

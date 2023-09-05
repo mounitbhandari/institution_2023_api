@@ -309,6 +309,30 @@ class OrganisationController extends Controller
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
 
+    public function get_all_student_list()
+    {
+        $result = DB::select("select ledgers.id,
+        ledgers.episode_id,
+        ledgers.organisation_id,
+        organisations.organisation_name,
+        ledgers.ledger_name,
+        ledgers.billing_name,
+        ledgers.is_student, 
+        ledgers.address,
+        ledgers.city,
+        ledgers.pin, 
+        ledgers.guardian_contact_number,
+        ledgers.whatsapp_number,
+        ledgers.email_id, 
+        ledgers.qualification
+        from ledgers 
+        inner join organisations ON organisations.id = ledgers.organisation_id
+        where ledgers.is_student=1
+        order by ledgers.ledger_name");
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+
     public function get_organisation_by_id($id)
     {
         $result = DB::select("Select id,

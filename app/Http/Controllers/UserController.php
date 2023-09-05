@@ -61,7 +61,8 @@ class UserController extends ApiController
             'user_name' => $request->user_name,
             'mobile1' => $request->mobile1,
             'user_type_id' => $request->user_type_id,
-            'organisation_id' => $request->organisation_id
+            'organisation_id' => $request->organisation_id,
+            'ledger_id'=>$request->ledger_id
         ]);
 
 //        return response()->json(['success'=>1,'data'=>$user], 200,[],JSON_NUMERIC_CHECK);
