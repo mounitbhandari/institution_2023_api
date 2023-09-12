@@ -723,7 +723,7 @@ class TransactionController extends ApiController
         $id = $request->input('id');
       
          $transactionMaster = DB::select("select distinct transaction_masters.id,transaction_masters.transaction_number,
-         get_total_due_by_transaction_id(transaction_masters.id)*-1 as total_due,ledgers.ledger_name
+         get_total_due_by_transaction_id(transaction_masters.id)*-1 as total_due,ledgers.ledger_name, transaction_masters.transaction_date
          from transaction_masters
          inner join transaction_details on transaction_details.transaction_master_id = transaction_masters.id
          inner join ledgers ON ledgers.id = transaction_details.ledger_id
