@@ -16,9 +16,131 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
-
+use Ixudra\Curl\Facades\Curl;
 class TransactionController extends ApiController
 {
+    //-------- phonePe Gatway Integration ------------------
+    public function response(Request $request)
+    {
+      return redirect()->to('https://www.simplifyist.in/#/');
+      echo"Barrackpore Academy of Information Technology";
+        $input = $request->all();
+        print_r($input);
+  
+        $saltKey = '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399';
+        $saltIndex = 1;
+  
+        $finalXHeader = hash('sha256','/pg/v1/status/'.$input['merchantId'].'/'.$input['transactionId'].$saltKey).'###'.$saltIndex;
+  
+        $response = Curl::to('https://api-preprod.phonepe.com/apis/merchant-simulator/pg/v1/status/'.$input['merchantId'].'/'.$input['transactionId'])
+                ->withHeader('Content-Type:application/json')
+                ->withHeader('accept:application/json')
+                ->withHeader('X-VERIFY:'.$finalXHeader)
+                ->withHeader('X-MERCHANT-ID:'.$input['transactionId'])
+                ->get();
+  
+        //return response()->json(['success'=>1,'data'=> $response], 200,[],JSON_NUMERIC_CHECK);
+        //dd(json_decode($response));
+        /* if(json_decode($response->data->responseCode)=="SUCCESS"){
+          return redirect()->to('https://www.simplifyist.in/#/');
+        }
+        else{
+          dd("Invaid transaction");
+        } */
+       
+  
+  /*             {#290 ▼ // app\Http\Controllers\PhonePecontroller.php:29
+          +"success": true
+          +"code": "PAYMENT_SUCCESS"
+          +"message": "Your payment is successful."
+          +"data": {#279 ▼
+            +"merchantId": "PGTESTPAYUAT"
+            +"merchantTransactionId": "MT7850590068188104"
+            +"transactionId": "T2312122043389944676246"
+            +"amount": 10000
+            +"state": "COMPLETED"
+            +"responseCode": "SUCCESS"
+            +"paymentInstrument": {#293 ▼
+              +"type": "UPI"
+              +"vpa": null
+              +"maskedAccountNumber": "XXXXXXXXXX890125"
+              +"ifsc": "AABF0009009"
+              +"utr": "206850679072"
+              +"upiTransactionId": "AXLd8ee55a8fd50452da92639907560b6cd"
+              +"accountHolderName": "Rajesh Kumar"
+            }
+          }
+        } */
+    }
+    public function phonePe($amount)
+    {
+      $apiKey = '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399';
+      $merchantId = 'PGTESTPAYUAT';
+      $keyIndex=1;
+      //$input = $request->all();
+     // $amount=$input['amount'];
+
+      $paymentData = array(
+    'merchantId' => $merchantId,
+    'merchantTransactionId' => "MT7850590068188104",
+    "merchantUserId"=>"MUID123",
+    'amount' => $amount*100, // Amount in paisa (10 INR)
+    'redirectUrl'=>route('response'),
+    'redirectMode'=>"POST",
+    'callbackUrl'=>route('response'),
+    "mobileNumber"=>"9163196112",
+    "paymentInstrument"=> array(    
+    "type"=> "PAY_PAGE",
+  )
+);
+$jsonencode = json_encode($paymentData);
+$payloadMain = base64_encode($jsonencode);
+
+$payload = $payloadMain . "/pg/v1/pay" . $apiKey;
+$sha256 = hash("sha256", $payload);
+$final_x_header = $sha256 . '###' . $keyIndex;
+$request = json_encode(array('request'=>$payloadMain));
+
+$curl = curl_init();
+curl_setopt_array($curl, [
+  CURLOPT_URL => "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay",
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => "",
+  CURLOPT_MAXREDIRS => 20,
+  CURLOPT_TIMEOUT => 60,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => "POST",
+   CURLOPT_POSTFIELDS => $request,
+  CURLOPT_HTTPHEADER => [
+    "Content-Type: application/json",
+     "X-VERIFY: " . $final_x_header,
+     "accept: application/json"
+  ],
+]);
+ 
+$response = curl_exec($curl);
+$err = curl_error($curl);
+ 
+curl_close($curl);
+ 
+if ($err) {
+  echo "cURL Error #:" . $err;
+} else {
+   $res = json_decode($response);
+   //print_r($res)
+  if(isset($res->success) && $res->success=='1'){
+  $paymentCode=$res->code;
+  $paymentMsg=$res->message;
+  $payUrl=$res->data->instrumentResponse->redirectInfo->url;
+  
+  //header('Location:'.$payUrl) ;
+  return redirect()->to($payUrl);
+    } 
+  }
+}
+   
+
+    //----------- End of Phonepe code -----------------------
     //----- Nanda gopal code -------------_
 
     public function delete_adv_adjustment_received($id){

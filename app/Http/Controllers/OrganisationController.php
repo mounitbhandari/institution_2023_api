@@ -19,6 +19,8 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionMaster;
 class OrganisationController extends Controller
 {
+
+    
     /**
      * Display a listing of the resource.
      *

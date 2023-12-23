@@ -17,6 +17,7 @@ use App\Http\Controllers\BijoyaRegistrationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\CourseFeesController;
+use App\Http\Controllers\MarksheetController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -28,6 +29,8 @@ use App\Http\Controllers\CourseFeesController;
 |
 */
 Route::post("/organisationDemoSave",[OrganisationController::class, 'organisation_Store']);
+Route::get('phonepe/{amount}',[TransactionController::class,'phonePe']);
+Route::post('phonepe-response',[TransactionController::class,'response'])->name('response');
 //get the user if you are authenticated
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
@@ -36,7 +39,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post("login",[UserController::class,'login']);
 Route::get("login",[UserController::class,'authenticationError'])->name('login');
 
-
+Route::get("getMarks",[MarksheetController::class,'index']);
+Route::post("saveMarks",[MarksheetController::class,'store']);
+Route::get("getMarkStudents/{id}",[MarksheetController::class,'get_mark_students']);
+Route::get("getSubjectsByCourseId/{id}",[MarksheetController::class,'get_subjects_by_course_id']);
 
 Route::post("register",[UserController::class,'register']);
 Route::patch("userUpdate",[UserController::class,'user_update']);
@@ -134,10 +140,15 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::patch("durationTypes",[DurationTypeController::class, 'update']);
     Route::delete("durationTypes/{id}",[DurationTypeController::class, 'destroy']);
 
+    Route::post("/subject", [SubjectController::class, 'saveSubject']);
+    Route::post("/saveSubjectToCourse", [SubjectController::class, 'save_subject_to_course']);
+    Route::get("subjects/{id}",[SubjectController::class, 'index']);
+    Route::get("/subjectToCourse/{id}", [SubjectController::class, 'get_subject_to_course']);
 
-    Route::get("subjects",[SubjectController::class, 'index']);
-
-
+    Route::get("getMarks",[MarksheetController::class,'index']);
+    Route::post("saveMarks",[MarksheetController::class,'store']);
+    Route::get("getMarkStudents/{id}",[MarksheetController::class,'get_mark_students']);
+    Route::get("getSubjectsByCourseId/{id}",[MarksheetController::class,'get_subjects_by_course_id']);
     //CourseRegistration
     // nanda gopal api
     //------------for developer Api ------------------------------
@@ -186,7 +197,10 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     //transactions
     Route::group(array('prefix' => 'transactions'), function() {
 
-        
+        // ----------- phonePe Api url -----------------------
+        Route::get('phonepe',[TransactionController::class,'phonePe']);
+        Route::any('phonepe-response',[TransactionController::class,'response'])->name('response');
+        //--------------- end of code ---------------------------
         Route::get("/all",[TransactionController::class, 'get_all_transactions']);
 
         Route::get("/workingDays",[TransactionController::class, 'get_count_working_days']);
@@ -289,6 +303,12 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
 
 
     // ALL REPORT API
+    Route::get("/getStudentNewsList/{id}",[ReportController::class, 'get_student_news_list']);
+
+    Route::post("/saveNews",[ReportController::class, 'news_save']);
+    Route::get("/getNewsList/{id}",[ReportController::class, 'get_all_news_list']);
+    Route::patch("/updateNewsStatus",[ReportController::class,'update_news_statusById']);
+
     Route::get("/getAllIncomeReport/{id}",[ReportController::class, 'get_all_income_report']);
     Route::get('/reportStudentBirthday/{id}',[ReportController::class,'get_student_birthday_report']);
     Route::get('/reportUpcomingDueList/{id}',[ReportController::class,'get_upcoming_due_list_report']);
@@ -351,9 +371,15 @@ Route::group(array('prefix' => 'dev'), function() {
     Route::delete("durationTypes/{id}",[DurationTypeController::class, 'destroy']);
 
 
-    Route::get("subjects",[SubjectController::class, 'index']);
-
-
+    Route::get("getMarks",[MarksheetController::class,'index']);
+    Route::post("saveMarks",[MarksheetController::class,'store']);
+    Route::get("getMarkStudents/{id}",[MarksheetController::class,'get_mark_students']);
+    Route::get("getSubjectsByCourseId/{id}",[MarksheetController::class,'get_subjects_by_course_id']);
+ 
+    Route::post("/subject", [SubjectController::class, 'saveSubject']);
+    Route::get("subjects/{id}",[SubjectController::class, 'index']);
+    Route::post("/saveSubjectToCourse", [SubjectController::class, 'save_subject_to_course']);
+    Route::get("/subjectToCourse/{id}", [SubjectController::class, 'get_subject_to_course']);
     //CourseRegistration
     Route::post("studentCourseRegistrations",[StudentCourseRegistrationController::class, 'store']);
     Route::get("studentCourseRegistrations",[StudentCourseRegistrationController::class, 'index']);
@@ -403,10 +429,17 @@ Route::group(array('prefix' => 'dev'), function() {
     Route::get("/bijoyaRegistrationForm",[BijoyaRegistrationController::class, 'getStudentInfo']);
 
 
+    //Marksheet
+    Route::get("getMarks",[MarksheetController::class,'index']);
+    Route::post("saveMarks",[MarksheetController::class,'store']);
+    Route::get("getMarkStudents/{id}",[MarksheetController::class,'get_mark_students']);
+    Route::get("getSubjectsByCourseId/{id}",[MarksheetController::class,'get_subjects_by_course_id']);
+  
     //subject
-
+    Route::get("/subjectToCourse/{id}", [SubjectController::class, 'get_subject_to_course']);
+    Route::post("/saveSubjectToCourse", [SubjectController::class, 'save_subject_to_course']);
     Route::post("/subject", [SubjectController::class, 'saveSubject']);
-    Route::get("/subject", [SubjectController::class, 'index']);
+    Route::get("/subjects/{id}", [SubjectController::class, 'index']);
 
      
 });

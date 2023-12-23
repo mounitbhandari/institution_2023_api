@@ -10,11 +10,78 @@ use App\Models\Ledger;
 use App\Models\StudentCourseRegistration;
 use App\Models\TransactionDetail;
 use App\Models\TransactionMaster;
+use App\Models\news;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 class ReportController extends Controller
 {
-  
+    public function get_student_news_list($id)
+    {
+        $result = DB::select("select  id,
+        news_description,
+        inforce, 
+        created_at,
+        organisation_id
+        from news 
+        where inforce=1 and organisation_id='$id'
+        order by news.id desc");
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function update_news_statusById(Request $request){
+        $id=$request->input('id');
+        //echo 'Id'.$id;
+        $news=news::findOrFail($id);
+        $news->inforce=$request->input('inforce');
+            //echo 'inforce'.$studentToCourse->inforce;
+        
+        $news->save();
+        return response()->json(['success'=>1,'data'=> $news], 200,[],JSON_NUMERIC_CHECK);
+        
+    }
+    public function get_all_news_list($id)
+    {
+        $result = DB::select("select  id,
+        news_description,
+        inforce, 
+        if(inforce=1,'Active','Inactive') as status,
+        created_at,
+        organisation_id
+        from news 
+        where organisation_id='$id'
+        order by news.id desc");
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function news_save(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'news_description' => 'required|max:1000|unique:news,news_description',
+            ]);
+        DB::beginTransaction();
+
+       try{
+         
+
+           // if any record is failed then whole entry will be rolled back
+           //try portion execute the commands and catch execute when error.
+            $news= new news();
+           
+            $news ->news_description = $request->input('newsDescription');
+            $news->organisation_id=$request->input('organisationId');
+           
+            $news->save();
+            DB::commit();
+
+        }catch(\Exception $e){
+            DB::rollBack();
+          return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);
+            //return $this->errorResponse($e->getMessage());
+        }
+        return response()->json(['success'=>1,'data'=>$news], 200,[],JSON_NUMERIC_CHECK);
+
+    }
     //
     public function get_all_income_report($orgID){
         $result = DB::select("select get_curr_month_total_cash(id) as total_monthly_cash, 
