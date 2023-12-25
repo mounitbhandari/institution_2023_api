@@ -41,7 +41,7 @@ Route::get("login",[UserController::class,'authenticationError'])->name('login')
 
 Route::get("getMarks",[MarksheetController::class,'index']);
 Route::post("saveMarks",[MarksheetController::class,'store']);
-Route::get("getMarkStudents/{id}",[MarksheetController::class,'get_mark_students']);
+Route::post("getMarkStudents",[MarksheetController::class,'get_mark_students']);
 Route::get("getSubjectsByCourseId/{id}",[MarksheetController::class,'get_subjects_by_course_id']);
 
 Route::post("register",[UserController::class,'register']);
@@ -147,7 +147,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
 
     Route::get("getMarks",[MarksheetController::class,'index']);
     Route::post("saveMarks",[MarksheetController::class,'store']);
-    Route::get("getMarkStudents/{id}",[MarksheetController::class,'get_mark_students']);
+    Route::post("getMarkStudents",[MarksheetController::class,'get_mark_students']);
     Route::get("getSubjectsByCourseId/{id}",[MarksheetController::class,'get_subjects_by_course_id']);
     //CourseRegistration
     // nanda gopal api
@@ -373,7 +373,7 @@ Route::group(array('prefix' => 'dev'), function() {
 
     Route::get("getMarks",[MarksheetController::class,'index']);
     Route::post("saveMarks",[MarksheetController::class,'store']);
-    Route::get("getMarkStudents/{id}",[MarksheetController::class,'get_mark_students']);
+    Route::post("getMarkStudents",[MarksheetController::class,'get_mark_students']);
     Route::get("getSubjectsByCourseId/{id}",[MarksheetController::class,'get_subjects_by_course_id']);
  
     Route::post("/subject", [SubjectController::class, 'saveSubject']);
@@ -432,7 +432,7 @@ Route::group(array('prefix' => 'dev'), function() {
     //Marksheet
     Route::get("getMarks",[MarksheetController::class,'index']);
     Route::post("saveMarks",[MarksheetController::class,'store']);
-    Route::get("getMarkStudents/{id}",[MarksheetController::class,'get_mark_students']);
+    Route::post("getMarkStudents",[MarksheetController::class,'get_mark_students']);
     Route::get("getSubjectsByCourseId/{id}",[MarksheetController::class,'get_subjects_by_course_id']);
   
     //subject

@@ -17,14 +17,21 @@ class MarksheetController extends Controller
      * @return \Illuminate\Http\Response
      */
    
-    public function get_mark_students($orgID)
+    public function get_mark_students(Request $request)
     {
-        $result = DB::select("select id,
-        ledger_name
-        from ledgers
-        where is_student=1 
-        and organisation_id='$orgID'
-        order by id desc");
+        $couseId=$request->input('couseId');
+        $organisationId=$request->input('organisationId');
+
+        $result = DB::select("select ledgers.id,
+        ledgers.ledger_name,
+        courses.id as courseId,
+        courses.full_name
+        from student_course_registrations
+        inner join courses ON courses.id = student_course_registrations.course_id
+        inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
+        where courses.id='$couseId' 
+        and ledgers.organisation_id='$organisationId'
+        order by ledgers.ledger_name");
        
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
      
