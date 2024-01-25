@@ -303,7 +303,9 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
 
 
     // ALL REPORT API
-    Route::get("/getStudentNewsList/{id}",[ReportController::class, 'get_student_news_list']);
+    Route::post("/getStudentNewsList",[ReportController::class, 'get_student_news_list']);
+
+    Route::post("/fileUpload",[ReportController::class, 'file_upload']);
 
     Route::post("/saveNews",[ReportController::class, 'news_save']);
     Route::get("/getNewsList/{id}",[ReportController::class, 'get_all_news_list']);

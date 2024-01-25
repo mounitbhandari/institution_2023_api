@@ -13,20 +13,39 @@ use App\Models\TransactionMaster;
 use App\Models\news;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 class ReportController extends Controller
 {
-    public function get_student_news_list($id)
+    public function get_student_news_list(Request $request)
     {
-        $result = DB::select("select  id,
-        news_description,
-        inforce, 
-        created_at,
-        organisation_id
-        from news 
-        where inforce=1 and organisation_id='$id'
-        order by news.id desc");
+        $organisationId = $request->input('organisationId');
+        $courseId = $request->input('courseId');
         
-        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        if (news::where('course_id', $courseId)->exists()) {
+            // The record exists
+            $result = DB::select("select  id,
+            news_description,file_url,
+            inforce, 
+            created_at,
+            organisation_id
+            from news 
+            where inforce=1 and course_id='$courseId' and organisation_id='$organisationId'
+            order by news.id desc limit 6");
+            
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        } else {
+            $result = DB::select("select  id,
+            news_description,file_url,
+            inforce, 
+            created_at,
+            organisation_id
+            from news 
+            where inforce=1 and organisation_id='$organisationId'
+            order by news.id desc limit 6");
+            
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        }
+       
     }
     public function update_news_statusById(Request $request){
         $id=$request->input('id');
@@ -42,7 +61,7 @@ class ReportController extends Controller
     public function get_all_news_list($id)
     {
         $result = DB::select("select  id,
-        news_description,
+        news_description,file_url,
         inforce, 
         if(inforce=1,'Active','Inactive') as status,
         created_at,
@@ -52,6 +71,56 @@ class ReportController extends Controller
         order by news.id desc");
         
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function file_upload(Request $request){
+       
+        $news= new news();
+        if(($request->hasFile('image')) && ($request->input('courseId')) && ($request->input('newsDescription'))){
+            //dd("It is working...");
+            $completeFileName=$request->file('image')->getClientOriginalName();
+            $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+            $extension=$request->file('image')->getClientOriginalExtension();
+            $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+            //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+            $path = $request->file('image')->move(public_path("/file_upload"), $compPic);
+            //return $this->successResponse($request->file('image'));
+
+            $news ->news_description = $request->input('newsDescription');
+            $news->course_id=$request->input('courseId');
+            $news->organisation_id=$request->input('organisationId');
+            $news->file_url=$compPic;
+            $news->save();
+            return response()->json(['success'=>1,'data'=> "File Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->hasFile('image')) && ($request->input('newsDescription'))){
+             //dd("It is working...");
+             $completeFileName=$request->file('image')->getClientOriginalName();
+             $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+             $extension=$request->file('image')->getClientOriginalExtension();
+             $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+             //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+             $path = $request->file('image')->move(public_path("/file_upload"), $compPic);
+             //return $this->successResponse($request->file('image'));
+ 
+             $news ->news_description = $request->input('newsDescription');
+             $news->organisation_id=$request->input('organisationId');
+             $news->file_url=$compPic;
+             $news->save();
+             return response()->json(['success'=>1,'data'=> "File Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->input('courseId')) && ($request->input('newsDescription'))){
+            $news ->news_description = $request->input('newsDescription');
+            $news->course_id=$request->input('courseId');
+            $news->organisation_id=$request->input('organisationId');
+            $news->save();
+            return response()->json(['success'=>1,'data'=> "File Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else{
+            $news ->news_description = $request->input('newsDescription');
+            $news->organisation_id=$request->input('organisationId');
+            $news->save();
+            return response()->json(['success'=>1,'data'=> "File Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
     }
     public function news_save(Request $request)
     {
@@ -69,8 +138,8 @@ class ReportController extends Controller
             $news= new news();
            
             $news ->news_description = $request->input('newsDescription');
+            $news->course_id=$request->input('courseId');
             $news->organisation_id=$request->input('organisationId');
-           
             $news->save();
             DB::commit();
 

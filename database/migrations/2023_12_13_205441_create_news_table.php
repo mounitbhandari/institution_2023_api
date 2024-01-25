@@ -18,6 +18,10 @@ return new class extends Migration
 
             $table->string('news_description',1000)->nullable(false);
             $table->tinyInteger('inforce')->default('1');
+
+             //adding course
+             $table->foreignId('course_id')->references('id')->on('courses')->onDelete('cascade');
+
             // create organisation Foreign Key
             $table->bigInteger('organisation_id')->unsigned()->default(1);
             $table ->foreign('organisation_id')->references('id')->on('organisations');
