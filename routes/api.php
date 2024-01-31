@@ -28,6 +28,8 @@ use App\Http\Controllers\MarksheetController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::post('phonepeTesting',[TransactionController::class,'phonePeTest']);
+
 Route::post("/organisationDemoSave",[OrganisationController::class, 'organisation_Store']);
 Route::get('phonepe/{amount}',[TransactionController::class,'phonePe']);
 Route::post('phonepe-response',[TransactionController::class,'response'])->name('response');
@@ -305,6 +307,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     // ALL REPORT API
     Route::post("/getStudentNewsList",[ReportController::class, 'get_student_news_list']);
 
+    Route::get("/getPivotTableAdmissionList/{id}",[ReportController::class, 'get_pivot_table_for_admission']);
     Route::post("/fileUpload",[ReportController::class, 'file_upload']);
 
     Route::post("/saveNews",[ReportController::class, 'news_save']);
@@ -317,6 +320,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::get('/reportStudentToCourseRegistrationList/{id}',[ReportController::class,'get_student_to_course_registration_report']);
     Route::get('/reportStudentToCourseRegistrationListLedgerId/{id}',[ReportController::class,'get_student_to_course_registration_report_by_ledger_id']);
     Route::post('/getAllIncomeListReport',[ReportController::class,'get_all_income_list_report']);
+    Route::get('/getPivotTableIncomeListReport/{id}',[ReportController::class,'get_pivot_table_income_list_report']);
     // END REPORT PART
 
 Route::group(array('prefix' => 'dev'), function() {
