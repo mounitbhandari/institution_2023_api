@@ -16,12 +16,36 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 class ReportController extends Controller
 {
+    public function get_pivot_table_for_admission($orgID)
+    {
+        $result = DB::select("select year(effective_date) AS YEAR,
+        count(CASE WHEN  month(effective_date)=1 THEN effective_date ELSE NULL END) as 'JAN',
+        count(CASE WHEN  month(effective_date)=2 THEN effective_date ELSE NULL END) as 'FEB',
+        count(CASE WHEN  month(effective_date)=3 THEN effective_date ELSE NULL END) as 'MAR',
+        count(CASE WHEN  month(effective_date)=4 THEN effective_date ELSE NULL END) as 'APR',
+        count(CASE WHEN  month(effective_date)=5 THEN effective_date ELSE NULL END) as 'MAY',
+        count(CASE WHEN  month(effective_date)=6 THEN effective_date ELSE NULL END) as 'JUN',
+        count(CASE WHEN  month(effective_date)=7 THEN effective_date ELSE NULL END) as 'JLY',
+        count(CASE WHEN  month(effective_date)=8 THEN effective_date ELSE NULL END) as 'AUG',
+        count(CASE WHEN  month(effective_date)=9 THEN effective_date ELSE NULL END) as 'SEP',
+        count(CASE WHEN  month(effective_date)=10 THEN effective_date ELSE NULL END) as 'OCT',
+        count(CASE WHEN  month(effective_date)=11 THEN effective_date ELSE NULL END) as 'NOV',
+        count(CASE WHEN  month(effective_date)=12 THEN effective_date ELSE NULL END) as 'DEC'
+       from student_course_registrations
+       where student_course_registrations.organisation_id='$orgID'
+      group by year(effective_date)
+      order by year(effective_date) desc");
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function get_student_news_list(Request $request)
     {
         $organisationId = $request->input('organisationId');
         $courseId = $request->input('courseId');
-        
-        if (news::where('course_id', $courseId)->exists()) {
+        $existsId=news::where('course_id', $courseId)->exists();
+        //echo $existsId;
+        //return response()->json(['success'=>1,'data'=> $existsId], 200,[],JSON_NUMERIC_CHECK);
+       if ($existsId) {
             // The record exists
             $result = DB::select("select  id,
             news_description,file_url,
@@ -33,7 +57,7 @@ class ReportController extends Controller
             order by news.id desc limit 6");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        } else {
+        } else if (!$existsId){
             $result = DB::select("select  id,
             news_description,file_url,
             inforce, 
@@ -41,11 +65,11 @@ class ReportController extends Controller
             organisation_id
             from news 
             where inforce=1 and organisation_id='$organisationId'
-            order by news.id desc limit 6");
+            and course_id is null order by news.id desc limit 6");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
         }
-       
+        
     }
     public function update_news_statusById(Request $request){
         $id=$request->input('id');
@@ -316,6 +340,44 @@ class ReportController extends Controller
                         and table1.id = trans_master1.id and table1.ledger_id not in (11)
                         and table1.transaction_date between '$startDate' and '$endDate'
                         and trans_master2.organisation_id='$orgID'");
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function get_pivot_table_income_list_report($orgID)
+    {
+       $result = DB::select("select YEAR(table1.transaction_date) AS YEAR, 
+        SUM(CASE WHEN  month(table1.transaction_date)=1 THEN table1.received_amount ELSE 0 END) as 'JAN',
+        SUM(CASE WHEN  month(table1.transaction_date)=2 THEN table1.received_amount ELSE 0 END) as 'FEB',
+        SUM(CASE WHEN  month(table1.transaction_date)=3 THEN table1.received_amount ELSE 0 END) as 'MAR',
+        SUM(CASE WHEN  month(table1.transaction_date)=4 THEN table1.received_amount ELSE 0 END) as 'APR',
+        SUM(CASE WHEN  month(table1.transaction_date)=5 THEN table1.received_amount ELSE 0 END) as 'MAY',
+        SUM(CASE WHEN  month(table1.transaction_date)=6 THEN table1.received_amount ELSE 0 END) as 'JUN',
+        SUM(CASE WHEN  month(table1.transaction_date)=7 THEN table1.received_amount ELSE 0 END) as 'JLY',
+        SUM(CASE WHEN  month(table1.transaction_date)=8 THEN table1.received_amount ELSE 0 END) as 'AUG',
+        SUM(CASE WHEN  month(table1.transaction_date)=9 THEN table1.received_amount ELSE 0 END) as 'SEP',
+        SUM(CASE WHEN  month(table1.transaction_date)=10 THEN table1.received_amount ELSE 0 END) as 'OCT',
+        SUM(CASE WHEN  month(table1.transaction_date)=11 THEN table1.received_amount ELSE 0 END) as 'NOV',
+        SUM(CASE WHEN  month(table1.transaction_date)=12 THEN table1.received_amount ELSE 0 END) as 'DEC'
+                            from transaction_masters trans_master1,transaction_masters trans_master2
+                              inner join (select transaction_masters.id,
+                                                transaction_masters.transaction_number,
+                                                transaction_masters.transaction_date,
+                                                transaction_masters.created_at,
+                                                transaction_details.ledger_id,
+                                                ledgers.ledger_name,
+                                                ledgers.billing_name,
+                                                transaction_details.amount as received_amount from transaction_masters
+                                                inner join transaction_details on transaction_details.transaction_master_id = transaction_masters.id
+                                                inner join ledgers ON ledgers.id = transaction_details.ledger_id
+                                                where transaction_masters.voucher_type_id=4
+                                                and transaction_details.transaction_type_id=1 and transaction_details.ledger_id not in(22)) as table1
+                              inner join student_course_registrations ON student_course_registrations.id = trans_master2.student_course_registration_id
+                              inner join courses ON courses.id = student_course_registrations.course_id
+                              inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
+                              where trans_master1.reference_transaction_master_id=trans_master2.id
+                              and table1.id = trans_master1.id and table1.ledger_id not in (11)
+                              and trans_master2.organisation_id='$orgID'
+                              GROUP BY YEAR(table1.transaction_date)
+                              ORDER BY YEAR(table1.transaction_date) desc");
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
 }
