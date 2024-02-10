@@ -82,7 +82,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
         Route::get("/{id}", [StudentController::class, 'index']);
         Route::get("/studentId/{id}", [StudentController::class, 'get_student_by_id']);
         Route::get("/studentProfileId/{id}", [StudentController::class, 'get_student_profile_by_id']);
-
+        Route::get("/teacherProfileId/{id}", [StudentController::class, 'get_teacher_profile_by_id']);
         // get any Ledger by Ledger group id
         
         Route::get("/feesNameDiscount", [StudentController::class, 'get_discount_feesname']);
@@ -142,6 +142,8 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::patch("durationTypes",[DurationTypeController::class, 'update']);
     Route::delete("durationTypes/{id}",[DurationTypeController::class, 'destroy']);
 
+    Route::get("/getTeacher/{id}",[StudentController::class, 'get_all_teacher']);
+    Route::post("/saveTeacher",[StudentController::class, 'storeTeacher']);
     Route::post("/subject", [SubjectController::class, 'saveSubject']);
     Route::post("/saveSubjectToCourse", [SubjectController::class, 'save_subject_to_course']);
     Route::get("subjects/{id}",[SubjectController::class, 'index']);
@@ -345,6 +347,7 @@ Route::group(array('prefix' => 'dev'), function() {
         Route::get("/registered/current", [StudentController::class, 'get_all_current_course_registered_students']);
         Route::get("/isDeletable/{id}", [StudentController::class, 'is_deletable_student']);
 
+        Route::post("/saveTeacher",[StudentController::class, 'storeTeacher']);
         Route::post("/",[StudentController::class, 'store']);
         Route::post("/store_multiple",[StudentController::class, 'store_multiple']);
         Route::patch("/",[StudentController::class, 'update']);
