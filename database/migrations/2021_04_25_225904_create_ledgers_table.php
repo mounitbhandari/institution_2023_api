@@ -59,6 +59,10 @@ class CreateLedgersTable extends Migration
               // create unique key
             $table->unique('ledger_name','organisation_id');
             $table->tinyInteger('inforce')->default('1');
+            // For Teacher
+            $table->string('is_teacher')->default(0);
+             //Subject id
+             $table->foreignId('subject_id')->nullable(true)->references('id')->on('subjects')->onDelete('cascade');
             $table->timestamps();
         });
     }
