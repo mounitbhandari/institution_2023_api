@@ -309,11 +309,16 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     // ALL REPORT API
     Route::post("/getStudentNewsList",[ReportController::class, 'get_student_news_list']);
 
+    Route::post("/getStudentSyllabusList",[ReportController::class, 'get_student_syllabus_list']);
+
     Route::get("/getPivotTableAdmissionList/{id}",[ReportController::class, 'get_pivot_table_for_admission']);
     Route::post("/fileUpload",[ReportController::class, 'file_upload']);
 
+    Route::post("/syllabusUpload",[ReportController::class, 'syllabus_upload']);
+
     Route::post("/saveNews",[ReportController::class, 'news_save']);
     Route::get("/getNewsList/{id}",[ReportController::class, 'get_all_news_list']);
+    Route::get("/getSyllabusList/{id}",[ReportController::class, 'get_all_syllabus_list']);
     Route::patch("/updateNewsStatus",[ReportController::class,'update_news_statusById']);
 
     Route::get("/getAllIncomeReport/{id}",[ReportController::class, 'get_all_income_report']);
