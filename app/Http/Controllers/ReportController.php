@@ -11,6 +11,7 @@ use App\Models\StudentCourseRegistration;
 use App\Models\TransactionDetail;
 use App\Models\TransactionMaster;
 use App\Models\news;
+use App\Models\Syllabus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -71,6 +72,39 @@ class ReportController extends Controller
         }
         
     }
+    public function get_student_syllabus_list(Request $request)
+    {
+        $organisationId = $request->input('organisationId');
+        $courseId = $request->input('courseId');
+        $existsId=Syllabus::where('course_id', $courseId)->exists();
+        //echo $existsId;
+        //return response()->json(['success'=>1,'data'=> $existsId], 200,[],JSON_NUMERIC_CHECK);
+       if ($existsId) {
+            // The record exists
+            $result = DB::select("select  id,
+            syllabus_description,file_url,
+            inforce, 
+            created_at,
+            organisation_id
+            from syllabi 
+            where inforce=1 and course_id='$courseId' and organisation_id='$organisationId'
+            order by syllabi.id desc");
+            
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        } else if (!$existsId){
+            $result = DB::select("select  id,
+            syllabus_description,file_url,
+            inforce, 
+            created_at,
+            organisation_id
+            from syllabi 
+            where inforce=1 and organisation_id='$organisationId'
+            and course_id is null order by syllabi.id desc");
+            
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        }
+        
+    }
     public function update_news_statusById(Request $request){
         $id=$request->input('id');
         //echo 'Id'.$id;
@@ -96,8 +130,22 @@ class ReportController extends Controller
         
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
+    public function get_all_syllabus_list($id)
+    {
+        $result = DB::select("select  id,
+        syllabus_description,
+        file_url,
+        inforce, 
+        if(inforce=1,'Active','Inactive') as status,
+        created_at,
+        organisation_id
+        from syllabi 
+        where organisation_id='$id'
+        order by syllabi.id desc");
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function file_upload(Request $request){
-       
         $news= new news();
         if(($request->hasFile('image')) && ($request->input('courseId')) && ($request->input('newsDescription'))){
             //dd("It is working...");
@@ -141,6 +189,55 @@ class ReportController extends Controller
         }
         else{
             $news ->news_description = $request->input('newsDescription');
+            $news->organisation_id=$request->input('organisationId');
+            $news->save();
+            return response()->json(['success'=>1,'data'=> "File Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+    }
+    public function syllabus_upload(Request $request){
+        $news= new Syllabus();
+        if(($request->hasFile('image')) && ($request->input('courseId')) && ($request->input('syllabusDescription'))){
+            //dd("It is working...");
+            $completeFileName=$request->file('image')->getClientOriginalName();
+            $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+            $extension=$request->file('image')->getClientOriginalExtension();
+            $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+            //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+            $path = $request->file('image')->move(public_path("/syllabus_upload"), $compPic);
+            //return $this->successResponse($request->file('image'));
+
+            $news ->syllabus_description = $request->input('syllabusDescription');
+            $news->course_id=$request->input('courseId');
+            $news->organisation_id=$request->input('organisationId');
+            $news->file_url=$compPic;
+            $news->save();
+            return response()->json(['success'=>1,'data'=> "Syllabus Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->hasFile('image')) && ($request->input('syllabusDescription'))){
+             //dd("It is working...");
+             $completeFileName=$request->file('image')->getClientOriginalName();
+             $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+             $extension=$request->file('image')->getClientOriginalExtension();
+             $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+             //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+             $path = $request->file('image')->move(public_path("/syllabus_upload"), $compPic);
+             //return $this->successResponse($request->file('image'));
+ 
+             $news ->syllabus_description = $request->input('syllabusDescription');
+             $news->organisation_id=$request->input('organisationId');
+             $news->file_url=$compPic;
+             $news->save();
+             return response()->json(['success'=>1,'data'=> "Syllabus Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->input('courseId')) && ($request->input('syllabusDescription'))){
+            $news ->syllabus_description = $request->input('syllabusDescription');
+            $news->course_id=$request->input('courseId');
+            $news->organisation_id=$request->input('organisationId');
+            $news->save();
+            return response()->json(['success'=>1,'data'=> "Syllabus Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else{
+            $news ->syllabus_description = $request->input('newsDescription');
             $news->organisation_id=$request->input('organisationId');
             $news->save();
             return response()->json(['success'=>1,'data'=> "File Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);

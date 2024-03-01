@@ -339,6 +339,7 @@ class StudentCourseRegistrationController extends Controller
             $courseRegistration->actual_course_duration= $request->input('actual_course_duration');
             $courseRegistration->duration_type_id= $request->input('duration_type_id');
             $courseRegistration->organisation_id=$request->input('organisationId');
+            $courseRegistration->section=$request->input('section');
             $courseRegistration->is_started= $request->input('isStarted');
             $courseRegistration->save();
 
@@ -431,7 +432,7 @@ class StudentCourseRegistrationController extends Controller
         $studentCourseRegistrations->effective_date=$request->input('effectiveDate');
         $studentCourseRegistrations->actual_course_duration=$request->input('actual_course_duration');
         $studentCourseRegistrations->duration_type_id=$request->input('duration_type_id');
-       
+        $studentCourseRegistrations->section=$request->input('section');
         $studentCourseRegistrations->save();
         
        

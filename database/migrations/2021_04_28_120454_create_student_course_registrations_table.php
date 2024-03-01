@@ -38,6 +38,7 @@ class CreateStudentCourseRegistrationsTable extends Migration
             $table->boolean('is_started')->default(false);
             $table->boolean('is_completed')->default(false);
 
+            $table->string('section',2)->nullable(true);
              // create organisation Foreign Key
              $table->bigInteger('organisation_id')->unsigned()->default(1);
              $table ->foreign('organisation_id')->references('id')->on('organisations');
