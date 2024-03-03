@@ -12,6 +12,7 @@ use App\Models\TransactionDetail;
 use App\Models\TransactionMaster;
 use App\Models\news;
 use App\Models\Syllabus;
+use App\Models\Assignment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -105,6 +106,53 @@ class ReportController extends Controller
         }
         
     }
+    public function get_student_assignment_list(Request $request)
+    {
+        $organisationId = $request->input('organisationId');
+        $courseId = $request->input('courseId');
+        $existsId=Syllabus::where('course_id', $courseId)->exists();
+        //echo $existsId;
+        //return response()->json(['success'=>1,'data'=> $existsId], 200,[],JSON_NUMERIC_CHECK);
+       if ($existsId) {
+            // The record exists
+            $result = DB::select("select assignments.id,
+            assignments.assignment_description,
+            assignments.file_url,
+            subjects.subject_full_name ,
+            if(assignments.inforce=1,'Active','Inactive') as status,
+            assignments.course_id, 
+            assignments.subject_id,
+            assignments.uploaded_by,
+            assignments.user_id,
+            assignments.organisation_id,
+            assignments.created_at
+            from assignments
+            inner join subjects ON subjects.id = assignments.subject_id
+            where assignments.inforce=1 and assignments.course_id='$courseId' and assignments.organisation_id='$organisationId'
+            order by assignments.id desc");
+            
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        } else if (!$existsId){
+            $result = DB::select("select assignments.id,
+            assignments.assignment_description,
+            assignments.file_url,
+            subjects.subject_full_name ,
+            if(assignments.inforce=1,'Active','Inactive') as status,
+            assignments.course_id, 
+            assignments.subject_id,
+            assignments.uploaded_by,
+            assignments.user_id,
+            assignments.organisation_id,
+            assignments.created_at
+            from assignments
+            inner join subjects ON subjects.id = assignments.subject_id
+            where assignments.inforce=1 and assignments.organisation_id='$organisationId'
+            and assignments.course_id is null order by assignments.id desc");
+            
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        }
+        
+    }
     public function update_news_statusById(Request $request){
         $id=$request->input('id');
         //echo 'Id'.$id;
@@ -142,6 +190,26 @@ class ReportController extends Controller
         from syllabi 
         where organisation_id='$id'
         order by syllabi.id desc");
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function get_all_assignment_list($id)
+    {
+        $result = DB::select("select assignments.id,
+        assignments.assignment_description,
+        assignments.file_url,
+        subjects.subject_full_name ,
+        if(assignments.inforce=1,'Active','Inactive') as status,
+        assignments.course_id, 
+        assignments.subject_id,
+        assignments.uploaded_by,
+        assignments.user_id,
+        assignments.organisation_id,
+        assignments.created_at
+        from assignments
+        inner join subjects ON subjects.id = assignments.subject_id
+        where assignments.organisation_id='$id'
+        order by assignments.id desc");
         
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
@@ -237,10 +305,68 @@ class ReportController extends Controller
             return response()->json(['success'=>1,'data'=> "Syllabus Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
         }
         else{
-            $news ->syllabus_description = $request->input('newsDescription');
+            $news ->syllabus_description = $request->input('syllabusDescription');
             $news->organisation_id=$request->input('organisationId');
             $news->save();
             return response()->json(['success'=>1,'data'=> "File Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+    }
+    public function assignment_upload(Request $request){
+        $news= new Assignment();
+        if(($request->hasFile('image')) && ($request->input('courseId')) && ($request->input('subject_id')) && ($request->input('assignmentDescription'))){
+            //dd("It is working...");
+            $completeFileName=$request->file('image')->getClientOriginalName();
+            $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+            $extension=$request->file('image')->getClientOriginalExtension();
+            $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+            //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+            $path = $request->file('image')->move(public_path("/assignment_upload"), $compPic);
+            //return $this->successResponse($request->file('image'));
+
+            $news ->assignment_description = $request->input('assignmentDescription');
+            $news->course_id=$request->input('courseId');
+            $news->subject_id=$request->input('subject_id');
+            $news->organisation_id=$request->input('organisationId');
+            $news->uploaded_by=$request->input('uploaded_by');
+            $news->file_url=$compPic;
+            $news->user_id=$request->input('user_id');
+            $news->save();
+            return response()->json(['success'=>1,'data'=> "Assignment Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->hasFile('image')) && ($request->input('assignmentDescription'))){
+             //dd("It is working...");
+             $completeFileName=$request->file('image')->getClientOriginalName();
+             $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+             $extension=$request->file('image')->getClientOriginalExtension();
+             $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+             //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+             $path = $request->file('image')->move(public_path("/assignment_upload"), $compPic);
+             //return $this->successResponse($request->file('image'));
+ 
+             $news ->assignment_description = $request->input('assignmentDescription');
+             $news->organisation_id=$request->input('organisationId');
+             $news->uploaded_by=$request->input('uploaded_by');
+             $news->file_url=$compPic;
+             $news->user_id=$request->input('user_id');
+             $news->save();
+             return response()->json(['success'=>1,'data'=> "Assignment Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->input('courseId')) && ($request->input('assignmentDescription'))){
+            $news ->assignment_description = $request->input('assignmentDescription');
+            $news->course_id=$request->input('courseId');
+            $news->organisation_id=$request->input('organisationId');
+            $news->uploaded_by=$request->input('uploaded_by');
+            $news->user_id=$request->input('user_id');
+            $news->save();
+            return response()->json(['success'=>1,'data'=> "Assignment Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else{
+            $news ->assignment_description = $request->input('assignmentDescription');
+            $news->organisation_id=$request->input('organisationId');
+            $news->uploaded_by=$request->input('uploaded_by');
+            $news->user_id=$request->input('user_id');
+            $news->save();
+            return response()->json(['success'=>1,'data'=> "Assignment Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
         }
     }
     public function news_save(Request $request)
