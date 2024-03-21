@@ -41,6 +41,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post("login",[UserController::class,'login']);
 Route::get("login",[UserController::class,'authenticationError'])->name('login');
 
+Route::post("/getStudentAssignmentList",[ReportController::class, 'get_student_assignment_list']);
+
 Route::get("getMarks",[MarksheetController::class,'index']);
 Route::post("saveMarks",[MarksheetController::class,'store']);
 Route::post("getMarkStudents",[MarksheetController::class,'get_mark_students']);

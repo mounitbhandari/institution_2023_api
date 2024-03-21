@@ -110,7 +110,7 @@ class ReportController extends Controller
     {
         $organisationId = $request->input('organisationId');
         $courseId = $request->input('courseId');
-        $existsId=Syllabus::where('course_id', $courseId)->exists();
+        $existsId=Assignment::where('course_id', $courseId)->exists();
         //echo $existsId;
         //return response()->json(['success'=>1,'data'=> $existsId], 200,[],JSON_NUMERIC_CHECK);
        if ($existsId) {
