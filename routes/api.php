@@ -18,6 +18,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\CourseFeesController;
 use App\Http\Controllers\MarksheetController;
+use App\Http\Controllers\PhonepeController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -30,9 +31,12 @@ use App\Http\Controllers\MarksheetController;
 */
 Route::post('phonepeTesting',[TransactionController::class,'phonePeTest']);
 
-Route::post("/organisationDemoSave",[OrganisationController::class, 'organisation_Store']);
-Route::get('phonepe/{amount}',[TransactionController::class,'phonePe']);
-Route::post('phonepe-response',[TransactionController::class,'response'])->name('response');
+Route::get('phonepe/{amount}/{merchantId}/{apiKey}/{merchantUserId}/{autoGenerateId}',[PhonePecontroller::class,'phonePe']);
+Route::any('phonepe-response',[PhonePeController::class,'response'])->name('response');
+
+Route::post("/organisationDemoSave",[OrganisationController::class, 'organisation_Store']); 
+/* Route::get('phonepe/{amount}',[TransactionController::class,'phonePe']);
+Route::post('phonepe-response',[TransactionController::class,'response'])->name('response');  */
 //get the user if you are authenticated
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
@@ -204,8 +208,8 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::group(array('prefix' => 'transactions'), function() {
 
         // ----------- phonePe Api url -----------------------
-        Route::get('phonepe',[TransactionController::class,'phonePe']);
-        Route::any('phonepe-response',[TransactionController::class,'response'])->name('response');
+       /*  Route::get('phonepe',[TransactionController::class,'phonePe']);
+        Route::any('phonepe-response',[TransactionController::class,'response'])->name('response'); */
         //--------------- end of code ---------------------------
         Route::get("/all",[TransactionController::class, 'get_all_transactions']);
 
