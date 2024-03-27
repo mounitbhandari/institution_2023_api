@@ -113,14 +113,14 @@ class TransactionController extends ApiController
                 ->withHeader('X-MERCHANT-ID:'.$input['transactionId'])
                 ->get(); */
     }
-    public function phonePe($amount)
+    public function phonePe(Request $request)
     {
       $apiKey = '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399';
       $merchantId = 'PGTESTPAYUAT';
       $keyIndex=1;
-      //$input = $request->all();
+      $input = $request->all();
      // $amount=$input['amount'];
-
+     $amount = $request->input('amount');
       $paymentData = array(
     'merchantId' => $merchantId,
     'merchantTransactionId' => "MT7850590068188104",
