@@ -348,7 +348,10 @@ class OrganisationController extends Controller
         whatsapp_number,
         contact_number,
         email_id,
-        opening_balance
+        opening_balance,
+        apiKey, 
+        merchantId, 
+        merchantUserId
         from organisations
         where id='$id'");
         

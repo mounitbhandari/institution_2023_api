@@ -138,7 +138,10 @@ class StudentController extends ApiController
         organisations.address as organisationAddress,
         organisations.email_id as organisationEmail,
         organisations.pin as organisationPin,
-        organisations.whatsapp_number as organisationContact
+        organisations.whatsapp_number as organisationContact,
+        organisations.apiKey,
+        organisations.merchantId,
+        organisations.merchantUserId
         FROM ledgers
         inner join organisations ON organisations.id = ledgers.organisation_id
         where ledgers.is_student=1

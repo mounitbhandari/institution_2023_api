@@ -29,10 +29,13 @@ use App\Http\Controllers\PhonepeController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::get("checkMerchantTransaction/{merchantTransactionId}",[PhonePeController::class,'check_merchantTransactionId']);
 Route::post('phonepeTesting',[TransactionController::class,'phonePeTest']);
 
 Route::get('phonepe/{amount}/{merchantId}/{apiKey}/{merchantUserId}/{autoGenerateId}',[PhonePecontroller::class,'phonePe']);
 Route::any('phonepe-response',[PhonePeController::class,'response'])->name('response');
+
+Route::post("/feesReceivedOnline/{merchantTransactionId}",[PhonePeController::class, 'save_fees_received_online']);
 
 Route::post("/organisationDemoSave",[OrganisationController::class, 'organisation_Store']); 
 /* Route::get('phonepe/{amount}',[TransactionController::class,'phonePe']);
