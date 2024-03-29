@@ -135,8 +135,8 @@ public function response(Request $request)
           $Phonepe->save();
       //echo "code:".$res->data->code;
       //return response()->json(['success'=>1,'data'=> $arn], 200,[],JSON_NUMERIC_CHECK);
-      //return redirect()->away('https://simplifyist.in/#/StudentUser');
-      return redirect()->away('http://localhost:4200/#/StudentUser');
+      return redirect()->away('https://simplifyist.in/#/StudentUser');
+      //return redirect()->away('http://localhost:4200/#/StudentUser');
     }
     else{
       return redirect()->away('https://Google.co.in');

@@ -118,7 +118,7 @@ class ReportController extends Controller
             $result = DB::select("select assignments.id,
             assignments.assignment_description,
             assignments.file_url,
-            subjects.subject_full_name ,
+            courses.full_name,
             if(assignments.inforce=1,'Active','Inactive') as status,
             assignments.course_id, 
             assignments.subject_id,
@@ -127,7 +127,7 @@ class ReportController extends Controller
             assignments.organisation_id,
             assignments.created_at
             from assignments
-            inner join subjects ON subjects.id = assignments.subject_id
+            inner join courses ON courses.id = assignments.course_id
             where assignments.inforce=1 and assignments.course_id='$courseId' and assignments.organisation_id='$organisationId'
             order by assignments.id desc");
             
@@ -136,7 +136,7 @@ class ReportController extends Controller
             $result = DB::select("select assignments.id,
             assignments.assignment_description,
             assignments.file_url,
-            subjects.subject_full_name ,
+            courses.full_name,
             if(assignments.inforce=1,'Active','Inactive') as status,
             assignments.course_id, 
             assignments.subject_id,
@@ -145,7 +145,7 @@ class ReportController extends Controller
             assignments.organisation_id,
             assignments.created_at
             from assignments
-            inner join subjects ON subjects.id = assignments.subject_id
+            inner join courses ON courses.id = assignments.course_id
             where assignments.inforce=1 and assignments.organisation_id='$organisationId'
             and assignments.course_id is null order by assignments.id desc");
             
@@ -333,8 +333,27 @@ class ReportController extends Controller
             $news->save();
             return response()->json(['success'=>1,'data'=> "Assignment Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
         }
+        else if(($request->hasFile('image')) && ($request->input('courseId')) && ($request->input('assignmentDescription'))){
+            $completeFileName=$request->file('image')->getClientOriginalName();
+            $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+            $extension=$request->file('image')->getClientOriginalExtension();
+            $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+            //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+            $path = $request->file('image')->move(public_path("/assignment_upload"), $compPic);
+            //return $this->successResponse($request->file('image'));
+
+            $news ->assignment_description = $request->input('assignmentDescription');
+            $news->course_id=$request->input('courseId');
+            $news->organisation_id=$request->input('organisationId');
+            $news->file_url=$compPic;
+            $news->uploaded_by=$request->input('uploaded_by');
+            $news->user_id=$request->input('user_id');
+            $news->save();
+            return response()->json(['success'=>1,'data'=> "Assignment Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
         else if(($request->hasFile('image')) && ($request->input('assignmentDescription'))){
              //dd("It is working...");
+             
              $completeFileName=$request->file('image')->getClientOriginalName();
              $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
              $extension=$request->file('image')->getClientOriginalExtension();
@@ -351,6 +370,7 @@ class ReportController extends Controller
              $news->save();
              return response()->json(['success'=>1,'data'=> "Assignment Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
         }
+        
         else if(($request->input('courseId')) && ($request->input('assignmentDescription'))){
             $news ->assignment_description = $request->input('assignmentDescription');
             $news->course_id=$request->input('courseId');
