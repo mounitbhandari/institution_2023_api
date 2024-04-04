@@ -19,6 +19,27 @@ class StudentController extends ApiController
      *
      * @return \Illuminate\Http\Response
      */
+    public function update_student_inforce($studentID)
+    {
+       
+        $student = new Student();
+        $student = Student::find($studentID);
+         
+        $student->inforce= 1;
+               
+        $student->save();
+        return response()->json(['success'=>1,'data'=>new StudentResource($student)], 200,[],JSON_NUMERIC_CHECK);
+
+    }
+    public function inactive_student($orgID)
+    {
+      $students= Student::where('is_student','=',1)
+      ->where('organisation_id','=',$orgID)
+      ->where('inforce','=',0)
+      ->orderBy('id', 'DESC')
+      ->get();
+      return response()->json(['success'=>1,'data'=> StudentResource::collection($students)], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function index($orgID)
     {
       $students= Student::where('is_student','=',1)

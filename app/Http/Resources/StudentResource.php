@@ -51,6 +51,7 @@ class StudentResource extends JsonResource
             'guardianName' => $this->guardian_name,
             'relationToGuardian' => $this->relation_to_guardian,
             'dob' => $this->dob,
+            'entryDate' => $this->entry_date,
             'sex' => $this->sex,
             'address' => $this->address,
             'city' => $this->city,

@@ -38,6 +38,10 @@ Route::any('phonepe-response',[PhonePeController::class,'response'])->name('resp
 Route::post("/feesReceivedOnline/{merchantTransactionId}",[PhonePeController::class, 'save_fees_received_online']);
 
 Route::post("/organisationDemoSave",[OrganisationController::class, 'organisation_Store']); 
+Route::get("statesList",[OrganisationController::class, 'all_states_list']);
+Route::post("/saveStudent",[OrganisationController::class, 'save_student']);
+
+Route::get("/allOrganisation",[OrganisationController::class, 'index']);
 /* Route::get('phonepe/{amount}',[TransactionController::class,'phonePe']);
 Route::post('phonepe-response',[TransactionController::class,'response'])->name('response');  */
 //get the user if you are authenticated
@@ -89,6 +93,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::group(array('prefix' => 'students'), function() {
         // এখানে সকলকেই দেখাবে, যাদের কোর্স দেওয়া হয়েছে ও যাদের দেওয়া হয়নি সবাইকেই
         Route::get("/{id}", [StudentController::class, 'index']);
+        Route::get("/inactiveStudentList/{id}", [StudentController::class, 'inactive_student']);
         Route::get("/studentId/{id}", [StudentController::class, 'get_student_by_id']);
         Route::get("/studentProfileId/{id}", [StudentController::class, 'get_student_profile_by_id']);
         Route::get("/teacherProfileId/{id}", [StudentController::class, 'get_teacher_profile_by_id']);
@@ -117,6 +122,8 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
         Route::post("/store_multiple",[StudentController::class, 'store_multiple']);
         Route::patch("/",[StudentController::class, 'update']);
         Route::delete("/{id}",[StudentController::class, 'delete']);
+
+        Route::get("updateStudentInforce/{id}",[StudentController::class, 'update_student_inforce']);
     });
 
 

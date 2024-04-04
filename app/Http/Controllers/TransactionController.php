@@ -120,8 +120,8 @@ class TransactionController extends ApiController
       $keyIndex=1;
       $input = $request->all();
      // $amount=$input['amount'];
-     $amount = $request->input('amount');
-      $paymentData = array(
+    $amount = $request->input('amount');
+    $paymentData = array(
     'merchantId' => $merchantId,
     'merchantTransactionId' => "MT7850590068188104",
     "merchantUserId"=>"MUID123",
