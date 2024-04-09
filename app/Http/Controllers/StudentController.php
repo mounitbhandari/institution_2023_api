@@ -19,6 +19,32 @@ class StudentController extends ApiController
      *
      * @return \Illuminate\Http\Response
      */
+    public function get_all_student_list_by_org_id($orgID)
+    {
+        $result = DB::select("select ledgers.id,
+        ledgers.episode_id,
+        ledgers.organisation_id,
+        organisations.organisation_name,
+        ledgers.ledger_name,
+        ledgers.billing_name,
+        ledgers.is_student, 
+        ledgers.address,
+        ledgers.city,
+        ledgers.pin, 
+        ledgers.guardian_contact_number,
+        ledgers.whatsapp_number,
+        ledgers.email_id, 
+        ledgers.qualification,
+        ledgers.is_student, 
+        ledgers.is_teacher
+        from ledgers 
+        inner join organisations ON organisations.id = ledgers.organisation_id
+        where (ledgers.is_student=1 or ledgers.is_teacher=1)
+        and ledgers.organisation_id='$orgID'
+        order by ledgers.ledger_name");
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function update_student_inforce($studentID)
     {
        

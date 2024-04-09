@@ -95,6 +95,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
         Route::get("/{id}", [StudentController::class, 'index']);
         Route::get("/inactiveStudentList/{id}", [StudentController::class, 'inactive_student']);
         Route::get("/studentId/{id}", [StudentController::class, 'get_student_by_id']);
+        Route::get("/studentByOrgId/{id}", [StudentController::class, 'get_all_student_list_by_org_id']);
         Route::get("/studentProfileId/{id}", [StudentController::class, 'get_student_profile_by_id']);
         Route::get("/teacherProfileId/{id}", [StudentController::class, 'get_teacher_profile_by_id']);
         // get any Ledger by Ledger group id
