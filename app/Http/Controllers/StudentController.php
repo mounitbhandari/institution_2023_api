@@ -19,6 +19,30 @@ class StudentController extends ApiController
      *
      * @return \Illuminate\Http\Response
      */
+    public function get_student_exists_by_id($id){
+        $existsId=Student::where('whatsapp_number', $id)
+        ->orWhere('email_id', '=', $id)
+        ->exists();
+        if ($existsId) {
+            
+            $result = DB::select("select ledgers.id, 
+            ledgers.episode_id,
+            ledgers.ledger_name,
+            ledgers.dob,
+            ledgers.address,
+            ledgers.qualification,
+            ledgers.entry_date,
+            ledgers.guardian_name,
+            organisations.organisation_name
+            from ledgers 
+            inner join organisations on organisations.id=ledgers.organisation_id
+            where (ledgers.whatsapp_number ='$id' or ledgers.email_id ='$id')");
+        
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        }else{
+            return response()->json(['success'=>0,'data'=>'Data Not Found'], 200,[],JSON_NUMERIC_CHECK);
+        }
+    }
     public function get_all_student_list_by_org_id($orgID)
     {
         $result = DB::select("select ledgers.id,
@@ -84,8 +108,22 @@ class StudentController extends ApiController
       ->get();
       return response()->json(['success'=>1,'data'=> StudentResource::collection($students)], 200,[],JSON_NUMERIC_CHECK);
     }
+    public function delete_inactive_student_by_id($id){
+        $result = Student::where('id', $id)
+                        ->where('inforce',0)
+                        ->where('is_student',1)->delete();
+        if($result){
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else{
+            return response()->json(['success'=>0,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        }
+      
+    }
     public function get_all_feesname()
     {
+        /* Picture::where('filename', $filename)->delete(); */
+
       //$courseRegistration= StudentCourseRegistration::get();
       /*   $result = DB::table('ledgers')
         ->where('ledger_group_id', '=', 6)
