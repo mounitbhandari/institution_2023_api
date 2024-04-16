@@ -40,6 +40,7 @@ Route::post("/feesReceivedOnline/{merchantTransactionId}",[PhonePeController::cl
 Route::post("/organisationDemoSave",[OrganisationController::class, 'organisation_Store']); 
 Route::get("statesList",[OrganisationController::class, 'all_states_list']);
 Route::post("/saveStudent",[OrganisationController::class, 'save_student']);
+Route::post("/saveTeacher",[OrganisationController::class, 'save_teacher']);
 Route::get("/studentExists/{id}", [StudentController::class, 'get_student_exists_by_id']);
 Route::get("/allOrganisation",[OrganisationController::class, 'index']);
 
@@ -164,7 +165,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::delete("durationTypes/{id}",[DurationTypeController::class, 'destroy']);
 
     Route::get("/getTeacher/{id}",[StudentController::class, 'get_all_teacher']);
-    Route::post("/saveTeacher",[StudentController::class, 'storeTeacher']);
+    /* Route::post("/saveTeacher",[StudentController::class, 'storeTeacher']); */
     Route::post("/subject", [SubjectController::class, 'saveSubject']);
     Route::post("/saveSubjectToCourse", [SubjectController::class, 'save_subject_to_course']);
     Route::get("subjects/{id}",[SubjectController::class, 'index']);
@@ -377,7 +378,7 @@ Route::group(array('prefix' => 'dev'), function() {
         Route::get("/registered/current", [StudentController::class, 'get_all_current_course_registered_students']);
         Route::get("/isDeletable/{id}", [StudentController::class, 'is_deletable_student']);
 
-        Route::post("/saveTeacher",[StudentController::class, 'storeTeacher']);
+        /* Route::post("/saveTeacher",[StudentController::class, 'storeTeacher']); */
         Route::post("/",[StudentController::class, 'store']);
         Route::post("/store_multiple",[StudentController::class, 'store_multiple']);
         Route::patch("/",[StudentController::class, 'update']);

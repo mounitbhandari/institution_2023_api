@@ -24,6 +24,101 @@ use App\Http\Resources\StudentResource;
 use Illuminate\Validation\Rule;
 class OrganisationController extends Controller
 {
+    public function save_teacher(Request $request)
+    {
+        $rules = array(
+            /* 'studentName' => 'required|max:255|unique:ledgers,ledger_name', */
+            'stateId' => 'required|exists:states,id',
+            'dob'=>["required","date_format:Y-m-d",function($attribute, $value, $fail){
+                if(get_age($value)<4){
+                    $fail($attribute.' in valid, age should more than 4 but input age is '.get_age($value));
+                }
+            }],
+            /* 'guardianName'=>['max:255',Rule::requiredIf(function() use($request){
+                return  $request->input('relationToGuardian') || get_age($request->input('dob'))<18;
+            })],
+            'relationToGuardian'=>'required_with:guardianName',
+            'email'=>'email',
+            'sex'=>'required|in:M,F,O' */
+        );
+        $messsages = array(
+            'sex.in'=>"Please use M or F"
+        );
+
+        $validator = Validator::make($request->all(),$rules,$messsages );
+
+        if ($validator->fails()) {
+           // return $this->errorResponse($validator->messages(),422);
+        }
+        if($request->has('entryDate')) {
+            $entryDate = $request->input('entryDate');
+        }else{
+            $entryDate=Carbon::now()->format('Y-m-d');
+        }
+        DB::beginTransaction();
+
+       try{
+           $accounting_year = get_accounting_year($entryDate);
+           $voucher="teacher";
+           $customVoucher=CustomVoucher::where('voucher_name','=',$voucher)->where('accounting_year',"=",$accounting_year)->first();
+           if($customVoucher) {
+               //already exist
+               $customVoucher->last_counter = $customVoucher->last_counter + 1;
+               $customVoucher->save();
+           }else{
+               //fresh entry
+               $customVoucher= new CustomVoucher();
+               $customVoucher->voucher_name=$voucher;
+               $customVoucher->accounting_year= $accounting_year;
+               $customVoucher->last_counter=1;
+               $customVoucher->delimiter='-';
+               $customVoucher->prefix='TEACH';
+               $customVoucher->save();
+           }
+           //adding Zeros before number
+           $counter = str_pad($customVoucher->last_counter,5,"0",STR_PAD_LEFT);
+           //creating sale bill number
+           $episode_id = $customVoucher->prefix.'-'.$counter."-".$accounting_year;
+
+
+           // if any record is failed then whole entry will be rolled back
+           //try portion execute the commands and catch execute when error.
+            $student= new Student();
+            $student->ledger_group_id = 15;
+            $student->is_teacher=1;
+
+            $student ->ledger_name = $request->input('studentName');
+            $student ->billing_name = $request->input('studentName');
+            $student->episode_id =$episode_id;
+            /* $student->father_name= $request->input('fatherName');
+            $student->mother_name= $request->input('motherName'); */
+            $student->guardian_name= $request->input('guardainName');
+            $student->relation_to_guardian= $request->input('relation');
+            $student->dob= $request->input('dob');
+            $student->sex= $request->input('sex');
+            $student->address= $request->input('address');
+            $student->city= $request->input('city');
+            $student->district= $request->input('district');
+            $student->state_id= $request->input('stateId');
+            $student->pin= $request->input('pin');
+            $student->guardian_contact_number= $request->input('guardianContactNumber');
+            $student->whatsapp_number= $request->input('whatsappNumber');
+            $student->email_id= $request->input('emailId');
+            $student->qualification= $request->input('qualification');
+            $student->organisation_id=$request->input('organisationId');
+            $student->entry_date= $entryDate;
+            $student->inforce= 1;
+            $student->save();
+            DB::commit();
+
+        }catch(\Exception $e){
+            DB::rollBack();
+           return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);
+            //return $this->errorResponse($e->getMessage());
+        }
+        return response()->json(['success'=>1,'data'=> $student], 200,[],JSON_NUMERIC_CHECK);
+
+    }
     public function save_student(Request $request)
     {
         $rules = array(
