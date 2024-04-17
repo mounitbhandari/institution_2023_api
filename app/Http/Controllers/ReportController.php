@@ -490,6 +490,7 @@ class ReportController extends Controller
         //$courseRegistration= StudentCourseRegistration::get();
          $result = DB::table('student_course_registrations')
             ->join('courses', 'courses.id', '=', 'student_course_registrations.course_id')
+            ->join('fees_mode_types', 'fees_mode_types.id', '=', 'courses.fees_mode_type_id')
             ->join('ledgers', 'ledgers.id', '=', 'student_course_registrations.ledger_id')
             ->where('student_course_registrations.organisation_id', '=', $orgID)
             ->where('ledgers.is_student', '=', 1)
@@ -505,6 +506,7 @@ class ReportController extends Controller
             'ledgers.ledger_name',
             'courses.full_name',
             'ledgers.whatsapp_number',
+            'fees_mode_types.fees_mode_type_name',
             DB::raw('if(student_course_registrations.is_completed,"Completed","Not Completed") as is_completed'),
             DB::raw('get_total_course_fees_by_studentregistration(student_course_registrations.id) as total_course_fees'),
             DB::raw('get_total_received_by_studentregistration(student_course_registrations.id) as total_received'),
