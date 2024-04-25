@@ -212,6 +212,8 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::get("studentCourseRegistrations/{id}",[StudentCourseRegistrationController::class, 'index']);
     Route::delete("studentCourseRegistrations/{id}",[StudentCourseRegistrationController::class, 'destroy']);
     Route::patch("studentCourseRegistrations",[StudentCourseRegistrationController::class, 'update']);
+    Route::post("isStudentToCourseExists",[StudentCourseRegistrationController::class, 'is_student_to_course_exists']);
+    Route::get("updateCourseCompleted/{id}",[StudentCourseRegistrationController::class, 'update_course_completed_ById']);
 
 
     Route::get("logout",[UserController::class,'logout']);
@@ -340,11 +342,13 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::post("/syllabusUpload",[ReportController::class, 'syllabus_upload']);
 
     Route::post("/assignmentUpload",[ReportController::class, 'assignment_upload']);
+    Route::post("/questionUpload",[ReportController::class, 'question_paper_upload']);
 
     Route::post("/saveNews",[ReportController::class, 'news_save']);
     Route::get("/getNewsList/{id}",[ReportController::class, 'get_all_news_list']);
     Route::get("/getSyllabusList/{id}",[ReportController::class, 'get_all_syllabus_list']);
     Route::get("/getAssignmentList/{id}",[ReportController::class, 'get_all_assignment_list']);
+    Route::get("/getQuestionPaperList/{id}",[ReportController::class, 'get_all_question_paper_list']);
     Route::patch("/updateNewsStatus",[ReportController::class,'update_news_statusById']);
 
     Route::get("/getAllIncomeReport/{id}",[ReportController::class, 'get_all_income_report']);
@@ -422,6 +426,7 @@ Route::group(array('prefix' => 'dev'), function() {
     Route::get("/subjectToCourse/{id}", [SubjectController::class, 'get_subject_to_course']);
     //CourseRegistration
     Route::post("studentCourseRegistrations",[StudentCourseRegistrationController::class, 'store']);
+    Route::post("isStudentToCourseExists",[StudentCourseRegistrationController::class, 'is_student_to_course_exists']);
     Route::get("studentCourseRegistrations",[StudentCourseRegistrationController::class, 'index']);
 
     Route::delete("studentCourseRegistrations/{id}",[StudentCourseRegistrationController::class, 'destroy']);

@@ -13,6 +13,7 @@ use App\Models\TransactionMaster;
 use App\Models\news;
 use App\Models\Syllabus;
 use App\Models\Assignment;
+use App\Models\QuestionPaper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -153,16 +154,15 @@ class ReportController extends Controller
         }
         
     }
+   
     public function update_news_statusById(Request $request){
         $id=$request->input('id');
         //echo 'Id'.$id;
         $news=news::findOrFail($id);
         $news->inforce=$request->input('inforce');
             //echo 'inforce'.$studentToCourse->inforce;
-        
         $news->save();
         return response()->json(['success'=>1,'data'=> $news], 200,[],JSON_NUMERIC_CHECK);
-        
     }
     public function get_all_news_list($id)
     {
@@ -193,6 +193,26 @@ class ReportController extends Controller
         
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
+    public function get_all_question_paper_list($id)
+    {
+        $result = DB::select("select question_papers.id,
+        question_papers.question_description,
+        question_papers.file_url,
+        subjects.subject_full_name ,
+        if(question_papers.inforce=1,'Active','Inactive') as status,
+        question_papers.course_id, 
+        question_papers.subject_id,
+        question_papers.uploaded_by,
+        question_papers.user_id,
+        question_papers.organisation_id,
+        question_papers.created_at
+        from question_papers
+        left outer join subjects ON subjects.id = question_papers.subject_id
+        where question_papers.organisation_id='$id'
+        order by question_papers.id desc");
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function get_all_assignment_list($id)
     {
         $result = DB::select("select assignments.id,
@@ -207,7 +227,7 @@ class ReportController extends Controller
         assignments.organisation_id,
         assignments.created_at
         from assignments
-        inner join subjects ON subjects.id = assignments.subject_id
+        left outer join subjects ON subjects.id = assignments.subject_id
         where assignments.organisation_id='$id'
         order by assignments.id desc");
         
@@ -309,6 +329,84 @@ class ReportController extends Controller
             $news->organisation_id=$request->input('organisationId');
             $news->save();
             return response()->json(['success'=>1,'data'=> "File Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+    }
+    public function question_paper_upload(Request $request){
+        $question= new QuestionPaper();
+        if(($request->hasFile('image')) && ($request->input('courseId')) && ($request->input('subject_id')) && ($request->input('questionDescription')))
+        {
+            //dd("It is working...");
+            $completeFileName=$request->file('image')->getClientOriginalName();
+            $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+            $extension=$request->file('image')->getClientOriginalExtension();
+            $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+            //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+            $path = $request->file('image')->move(public_path("/question_upload"), $compPic);
+            //return $this->successResponse($request->file('image'));
+
+            $question ->question_description = $request->input('questionDescription');
+            $question->course_id=$request->input('courseId');
+            $question->subject_id=$request->input('subject_id');
+            $question->organisation_id=$request->input('organisationId');
+            $question->uploaded_by=$request->input('uploaded_by');
+            $question->file_url=$compPic;
+            $question->user_id=$request->input('user_id');
+            $question->save();
+            return response()->json(['success'=>1,'data'=> "questionDescription Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->hasFile('image')) && ($request->input('courseId')) && (!$request->input('subject_id')) && ($request->input('questionDescription'))){
+            $completeFileName=$request->file('image')->getClientOriginalName();
+            $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+            $extension=$request->file('image')->getClientOriginalExtension();
+            $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+            //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+            $path = $request->file('image')->move(public_path("/question_upload"), $compPic);
+            //return $this->successResponse($request->file('image'));
+
+            $question ->question_description = $request->input('questionDescription');
+            $question->course_id=$request->input('courseId');
+            $question->organisation_id=$request->input('organisationId');
+            $question->file_url=$compPic;
+            $question->uploaded_by=$request->input('uploaded_by');
+            $question->user_id=$request->input('user_id');
+            $question->save();
+            return response()->json(['success'=>1,'data'=> "Question 1 Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->hasFile('image')) && ($request->input('questionDescription'))){
+             //dd("It is working...");
+             
+             $completeFileName=$request->file('image')->getClientOriginalName();
+             $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+             $extension=$request->file('image')->getClientOriginalExtension();
+             $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+             //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+             $path = $request->file('image')->move(public_path("/question_upload"), $compPic);
+             //return $this->successResponse($request->file('image'));
+ 
+             $question ->question_description = $request->input('questionDescription');
+             $question->organisation_id=$request->input('organisationId');
+             $question->uploaded_by=$request->input('uploaded_by');
+             $question->file_url=$compPic;
+             $question->user_id=$request->input('user_id');
+             $question->save();
+             return response()->json(['success'=>1,'data'=> "Question 2 Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->input('courseId')) && ($request->input('questionDescription'))){
+            $question ->question_description = $request->input('questionDescription');
+            $question->course_id=$request->input('courseId');
+            $question->organisation_id=$request->input('organisationId');
+            $question->uploaded_by=$request->input('uploaded_by');
+            $question->user_id=$request->input('user_id');
+            $question->save();
+            return response()->json(['success'=>1,'data'=> "Question 3 Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else{
+            $question ->question_description = $request->input('questionDescription');
+            $question->organisation_id=$request->input('organisationId');
+            $question->uploaded_by=$request->input('uploaded_by');
+            $question->user_id=$request->input('user_id');
+            $question->save();
+            return response()->json(['success'=>1,'data'=> "Question 4 Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
         }
     }
     public function assignment_upload(Request $request){
@@ -476,7 +574,7 @@ class ReportController extends Controller
         inner join courses ON courses.id = student_course_registrations.course_id
         inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
         where trans_master1.reference_transaction_master_id=trans_master2.id
-        and table1.id = trans_master1.id and trans_master2.organisation_id='$orgID'
+        and table1.id = trans_master1.id and student_course_registrations.is_completed=0 and trans_master2.organisation_id='$orgID'
         group by trans_master2.student_course_registration_id,courses.full_name,ledgers.ledger_name,ledgers.whatsapp_number
         having datediff(curdate(),max(table1.transaction_date))>24
         and get_total_due_by_student_registration_id(trans_master2.student_course_registration_id)>0
@@ -493,6 +591,7 @@ class ReportController extends Controller
             ->join('fees_mode_types', 'fees_mode_types.id', '=', 'courses.fees_mode_type_id')
             ->join('ledgers', 'ledgers.id', '=', 'student_course_registrations.ledger_id')
             ->where('student_course_registrations.organisation_id', '=', $orgID)
+            ->where('student_course_registrations.is_completed', '=', 0)
             ->where('ledgers.is_student', '=', 1)
             ->orderBy('student_course_registrations.id','desc')
             ->select('student_course_registrations.id', 

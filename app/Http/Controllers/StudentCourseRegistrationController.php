@@ -254,9 +254,47 @@ class StudentCourseRegistrationController extends Controller
             ->get(); */
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
+    public function update_course_completed_ById($id){
+        //$id=$request->input('id');
+        $entryDate=Carbon::now()->format('Y-m-d');
+        $courseRegistration=StudentCourseRegistration::findOrFail($id);
+        $courseRegistration->is_completed=1;
+        $courseRegistration->completion_date=$entryDate;
+        $courseRegistration->save();
+        return response()->json(['success'=>1,'data'=> $courseRegistration], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function is_student_to_course_exists(Request $request)
+    {
+        $input=($request->json()->all());
+        $ledgerId = $request->input('ledgerId');
+        $organisationId = $request->input('organisationId');
+        $courseId = $request->input('courseId');
+        $existsId=StudentCourseRegistration::where('course_id', $courseId)
+                                            ->where('ledger_id', $ledgerId)
+                                            ->where('is_completed', 0)
+                                            ->where('organisation_id', $organisationId)->exists();
+        if($existsId){
+            $result = DB::select("Update student_course_registrations set is_completed=1, completion_date=CURDATE()
+            WHERE ledger_id = ' $ledgerId' AND course_id = '$courseId' AND is_completed = 0");
+           }
+       
+    }
     public function store(Request $request)
     {
          $input=($request->json()->all());
+         // if any exists with same LEDGER ID, COURSE ID AND ORGANISATION ID then make course as compeleted 1
+         $ledgerId = $request->input('studentId');
+         $organisationId = $request->input('organisationId');
+         $courseId = $request->input('courseId');
+         $existsId=StudentCourseRegistration::where('course_id', $courseId)
+                                             ->where('ledger_id', $ledgerId)
+                                             ->where('is_completed', 0)
+                                             ->where('organisation_id', $organisationId)->exists();
+         if($existsId){
+             $result = DB::select("Update student_course_registrations set is_completed=1, completion_date=CURDATE()
+             WHERE ledger_id = ' $ledgerId' AND course_id = '$courseId' AND organisation_id='$organisationId'  AND is_completed = 0");
+            }
+         //**************** End of Code ******************/
         //$input_transaction_master=(object)($input['transactionMaster']);
         $input_transaction_details=($input['transactionDetails']);
 

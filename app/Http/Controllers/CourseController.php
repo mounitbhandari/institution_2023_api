@@ -60,6 +60,7 @@ class CourseController extends ApiController
         courses.course_code,
         courses.short_name,
         courses.full_name,
+        fees_mode_types.fees_mode_type_name,
         courses.course_duration,
         courses.description,
         courses.duration_type_id,
@@ -68,6 +69,7 @@ class CourseController extends ApiController
         if(table1.id,table1.id,0) as course_fees_id,
         if(table1.fees_amount,table1.fees_amount,0) as fees_amount 
         from courses
+        inner join fees_mode_types ON fees_mode_types.id = courses.fees_mode_type_id
         left outer join (select id, course_id, fees_amount from course_fees where inforce='1') as table1
         on table1.course_id=courses.id
         where courses.organisation_id=".$orgID);
