@@ -56,6 +56,9 @@ Route::post("login",[UserController::class,'login']);
 Route::get("login",[UserController::class,'authenticationError'])->name('login');
 
 Route::post("/getStudentAssignmentList",[ReportController::class, 'get_student_assignment_list']);
+Route::post("/getStudentQuestionPaperList",[ReportController::class, 'get_student_question_paper_list']);
+Route::post("/getStudentEbookList",[ReportController::class, 'get_student_ebook_list']);
+Route::post("/getStudentOnlineClassList",[ReportController::class, 'get_student_online_class_list']);
 
 Route::get("getMarks",[MarksheetController::class,'index']);
 Route::post("saveMarks",[MarksheetController::class,'store']);
@@ -80,7 +83,9 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
 
     //get all users
     Route::get("users",[UserController::class,'getAllUsers']);
-    Route::post('uploadPicture',[UserController::class,'uploadUserPicture']);
+    Route::get("getProfileImage/{orgId}/{ledgerId}",[UserController::class,'get_profile_image_by_id']);
+    //Route::post('uploadPicture',[UserController::class,'uploadUserPicture']);
+    Route::post('uploadPicture',[UserController::class,'uploadUserPicture_test']);
     Route::post('uploadStudentPicture',[UserController::class,'uploadStudentPicture']);
 
     //getting question
@@ -102,6 +107,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
         Route::get("/studentExists/{id}", [StudentController::class, 'get_student_exists_by_id']);
         Route::get("/studentProfileId/{id}", [StudentController::class, 'get_student_profile_by_id']);
         Route::get("/teacherProfileId/{id}", [StudentController::class, 'get_teacher_profile_by_id']);
+        Route::get("/allProfileId/{id}", [StudentController::class, 'get_all_profile_by_id']);
         // get any Ledger by Ledger group id
         
         Route::get("/feesNameDiscount", [StudentController::class, 'get_discount_feesname']);
@@ -343,12 +349,16 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
 
     Route::post("/assignmentUpload",[ReportController::class, 'assignment_upload']);
     Route::post("/questionUpload",[ReportController::class, 'question_paper_upload']);
+    Route::post("/ebookUpload",[ReportController::class, 'ebook_upload']);
+    Route::post("/saveOnlineClass",[ReportController::class, 'save_online_class']);
 
     Route::post("/saveNews",[ReportController::class, 'news_save']);
     Route::get("/getNewsList/{id}",[ReportController::class, 'get_all_news_list']);
     Route::get("/getSyllabusList/{id}",[ReportController::class, 'get_all_syllabus_list']);
     Route::get("/getAssignmentList/{id}",[ReportController::class, 'get_all_assignment_list']);
     Route::get("/getQuestionPaperList/{id}",[ReportController::class, 'get_all_question_paper_list']);
+    Route::get("/getEbookList/{id}",[ReportController::class, 'get_all_ebook_list']);
+    Route::get("/getOnlineClassList/{id}",[ReportController::class, 'get_all_online_class_list']);
     Route::patch("/updateNewsStatus",[ReportController::class,'update_news_statusById']);
 
     Route::get("/getAllIncomeReport/{id}",[ReportController::class, 'get_all_income_report']);

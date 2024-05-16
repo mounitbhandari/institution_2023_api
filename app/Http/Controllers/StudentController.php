@@ -213,6 +213,10 @@ class StudentController extends ApiController
         $result = DB::select("select ledgers.id, 
         ledgers.episode_id,
         ledgers.ledger_name,
+        ledgers.guardian_name,
+        ledgers.sex,
+        ledgers.city,
+        ledgers.entry_date,
         ledgers.dob, 
         ledgers.address,
         ledgers.pin, 
@@ -231,6 +235,34 @@ class StudentController extends ApiController
         inner join organisations ON organisations.id = ledgers.organisation_id
         where ledgers.is_student=1
         and ledgers.id='$id'");
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function get_all_profile_by_id($id)
+    {
+        $result = DB::select("select ledgers.id, 
+        ledgers.episode_id,
+        ledgers.ledger_name,
+        ledgers.guardian_name,
+        ledgers.sex,
+        ledgers.city,
+        ledgers.entry_date,
+        ledgers.dob, 
+        ledgers.address,
+        ledgers.pin, 
+        ledgers.whatsapp_number,
+        ledgers.email_id,
+        ledgers.qualification,
+        organisations.organisation_name,
+        organisations.address as organisationAddress,
+        organisations.email_id as organisationEmail,
+        organisations.pin as organisationPin,
+        organisations.whatsapp_number as organisationContact,
+        organisations.apiKey,
+        organisations.merchantId,
+        organisations.merchantUserId
+        FROM ledgers
+        inner join organisations ON organisations.id = ledgers.organisation_id
+        where ledgers.id='$id'");
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
     public function get_teacher_profile_by_id($id)

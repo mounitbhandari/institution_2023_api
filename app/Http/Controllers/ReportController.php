@@ -13,6 +13,8 @@ use App\Models\TransactionMaster;
 use App\Models\news;
 use App\Models\Syllabus;
 use App\Models\Assignment;
+use App\Models\Ebook;
+use App\Models\Onlineclass;
 use App\Models\QuestionPaper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -120,6 +122,7 @@ class ReportController extends Controller
             assignments.assignment_description,
             assignments.file_url,
             courses.full_name,
+            subjects.subject_full_name ,
             if(assignments.inforce=1,'Active','Inactive') as status,
             assignments.course_id, 
             assignments.subject_id,
@@ -129,6 +132,7 @@ class ReportController extends Controller
             assignments.created_at
             from assignments
             inner join courses ON courses.id = assignments.course_id
+            left outer join subjects ON subjects.id = assignments.subject_id
             where assignments.inforce=1 and assignments.course_id='$courseId' and assignments.organisation_id='$organisationId'
             order by assignments.id desc");
             
@@ -138,6 +142,7 @@ class ReportController extends Controller
             assignments.assignment_description,
             assignments.file_url,
             courses.full_name,
+            subjects.subject_full_name ,
             if(assignments.inforce=1,'Active','Inactive') as status,
             assignments.course_id, 
             assignments.subject_id,
@@ -147,14 +152,165 @@ class ReportController extends Controller
             assignments.created_at
             from assignments
             inner join courses ON courses.id = assignments.course_id
+            left outer join subjects ON subjects.id = assignments.subject_id
             where assignments.inforce=1 and assignments.organisation_id='$organisationId'
-            and assignments.course_id is null order by assignments.id desc");
+            order by assignments.id desc");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
         }
         
     }
-   
+    public function get_student_online_class_list(Request $request)
+    {
+        $organisationId = $request->input('organisationId');
+        $courseId = $request->input('courseId');
+        $existsId=Onlineclass::where('course_id', $courseId)->exists();
+        //echo $existsId;
+        //return response()->json(['success'=>1,'data'=> $existsId], 200,[],JSON_NUMERIC_CHECK);
+       if ($existsId) {
+            // The record exists
+            $result = DB::select("select onlineclasses.id,
+            onlineclasses.online_class_url,
+            subjects.subject_full_name ,
+            courses.full_name,
+            if(onlineclasses.inforce=1,'Active','Inactive') as status,
+            onlineclasses.course_id, 
+            onlineclasses.subject_id,
+            onlineclasses.uploaded_by,
+            onlineclasses.user_id,
+            onlineclasses.organisation_id,
+            onlineclasses.created_at
+            from onlineclasses
+            left outer join courses ON courses.id = onlineclasses.course_id
+            left outer join subjects ON subjects.id = onlineclasses.subject_id
+            where onlineclasses.inforce=1 and onlineclasses.course_id='$courseId' and onlineclasses.organisation_id='$organisationId'
+            order by onlineclasses.id desc");
+            
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        } else if (!$existsId){
+            $result = DB::select("select onlineclasses.id,
+            onlineclasses.online_class_url,
+            subjects.subject_full_name ,
+            courses.full_name,
+            if(onlineclasses.inforce=1,'Active','Inactive') as status,
+            onlineclasses.course_id, 
+            onlineclasses.subject_id,
+            onlineclasses.uploaded_by,
+            onlineclasses.user_id,
+            onlineclasses.organisation_id,
+            onlineclasses.created_at
+            from onlineclasses
+            left outer join courses ON courses.id = onlineclasses.course_id
+            left outer join subjects ON subjects.id = onlineclasses.subject_id
+            where onlineclasses.inforce=1 and onlineclasses.organisation_id='$organisationId'
+            order by onlineclasses.id desc");
+            
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        }
+        
+    }
+    public function get_student_ebook_list(Request $request)
+    {
+        $organisationId = $request->input('organisationId');
+        $courseId = $request->input('courseId');
+        $existsId=Ebook::where('course_id', $courseId)->exists();
+        //echo $existsId;
+        //return response()->json(['success'=>1,'data'=> $existsId], 200,[],JSON_NUMERIC_CHECK);
+       if ($existsId) {
+            // The record exists
+            $result = DB::select("select ebooks.id,
+            ebooks.ebook_description,
+            ebooks.file_url,
+            courses.full_name,
+            subjects.subject_full_name ,
+            if(ebooks.inforce=1,'Active','Inactive') as status,
+            ebooks.course_id, 
+            ebooks.subject_id,
+            ebooks.uploaded_by,
+            ebooks.user_id,
+            ebooks.organisation_id,
+            ebooks.created_at
+            from ebooks
+            inner join courses ON courses.id = ebooks.course_id
+            left outer join subjects ON subjects.id = ebooks.subject_id
+            where ebooks.inforce=1 and ebooks.course_id='$courseId' and ebooks.organisation_id='$organisationId'
+            order by ebooks.id desc");
+            
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        } else if (!$existsId){
+            $result = DB::select("select ebooks.id,
+            ebooks.ebook_description,
+            ebooks.file_url,
+            courses.full_name,
+            subjects.subject_full_name ,
+            if(ebooks.inforce=1,'Active','Inactive') as status,
+            ebooks.course_id, 
+            ebooks.subject_id,
+            ebooks.uploaded_by,
+            ebooks.user_id,
+            ebooks.organisation_id,
+            ebooks.created_at
+            from ebooks
+            inner join courses ON courses.id = ebooks.course_id
+            left outer join subjects ON subjects.id = ebooks.subject_id
+            where ebooks.inforce=1 and ebooks.organisation_id='$organisationId'
+            order by ebooks.id desc");
+            
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        }
+        
+    }
+    public function get_student_question_paper_list(Request $request)
+    {
+        $organisationId = $request->input('organisationId');
+        $courseId = $request->input('courseId');
+        $existsId=QuestionPaper::where('course_id', $courseId)->exists();
+        //echo $existsId;
+        //return response()->json(['success'=>1,'data'=> $existsId], 200,[],JSON_NUMERIC_CHECK);
+       if ($existsId) {
+            // The record exists
+            $result = DB::select("select question_papers.id,
+            question_papers.question_description,
+            question_papers.file_url,
+            courses.full_name,
+            subjects.subject_full_name ,
+            if(question_papers.inforce=1,'Active','Inactive') as status,
+            question_papers.course_id, 
+            question_papers.subject_id,
+            question_papers.uploaded_by,
+            question_papers.user_id,
+            question_papers.organisation_id,
+            question_papers.created_at
+            from question_papers
+            inner join courses ON courses.id = question_papers.course_id
+            left outer join subjects ON subjects.id = question_papers.subject_id
+            where question_papers.inforce=1 and question_papers.course_id='$courseId' and question_papers.organisation_id='$organisationId'
+            order by question_papers.id desc");
+            
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        } else if (!$existsId){
+            $result = DB::select("select question_papers.id,
+            question_papers.question_description,
+            question_papers.file_url,
+            courses.full_name,
+            subjects.subject_full_name ,
+            if(question_papers.inforce=1,'Active','Inactive') as status,
+            question_papers.course_id, 
+            question_papers.subject_id,
+            question_papers.uploaded_by,
+            question_papers.user_id,
+            question_papers.organisation_id,
+            question_papers.created_at
+            from question_papers
+            inner join courses ON courses.id = question_papers.course_id
+            left outer join subjects ON subjects.id = question_papers.subject_id
+            where question_papers.inforce=1 and question_papers.organisation_id='$organisationId'
+            order by question_papers.id desc");
+            
+            return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+        }
+        
+    }
     public function update_news_statusById(Request $request){
         $id=$request->input('id');
         //echo 'Id'.$id;
@@ -193,12 +349,56 @@ class ReportController extends Controller
         
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
+    public function get_all_online_class_list($id)
+    {
+        $result = DB::select("select onlineclasses.id,
+        onlineclasses.online_class_url,
+        subjects.subject_full_name ,
+        courses.full_name,
+        if(onlineclasses.inforce=1,'Active','Inactive') as status,
+        onlineclasses.course_id, 
+        onlineclasses.subject_id,
+        onlineclasses.uploaded_by,
+        onlineclasses.user_id,
+        onlineclasses.organisation_id,
+        onlineclasses.created_at
+        from onlineclasses
+        left outer join courses ON courses.id = onlineclasses.course_id
+        left outer join subjects ON subjects.id = onlineclasses.subject_id
+        where onlineclasses.organisation_id='$id'
+        order by onlineclasses.id desc");
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function get_all_ebook_list($id)
+    {
+        $result = DB::select("select ebooks.id,
+        ebooks.ebook_description,
+        ebooks.file_url,
+        subjects.subject_full_name ,
+        courses.full_name,
+        if(ebooks.inforce=1,'Active','Inactive') as status,
+        ebooks.course_id, 
+        ebooks.subject_id,
+        ebooks.uploaded_by,
+        ebooks.user_id,
+        ebooks.organisation_id,
+        ebooks.created_at
+        from ebooks
+        inner join courses ON courses.id = ebooks.course_id
+        left outer join subjects ON subjects.id = ebooks.subject_id
+        where ebooks.organisation_id='$id'
+        order by ebooks.id desc");
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function get_all_question_paper_list($id)
     {
         $result = DB::select("select question_papers.id,
         question_papers.question_description,
         question_papers.file_url,
         subjects.subject_full_name ,
+        courses.full_name,
         if(question_papers.inforce=1,'Active','Inactive') as status,
         question_papers.course_id, 
         question_papers.subject_id,
@@ -207,6 +407,7 @@ class ReportController extends Controller
         question_papers.organisation_id,
         question_papers.created_at
         from question_papers
+        inner join courses ON courses.id = question_papers.course_id
         left outer join subjects ON subjects.id = question_papers.subject_id
         where question_papers.organisation_id='$id'
         order by question_papers.id desc");
@@ -329,6 +530,116 @@ class ReportController extends Controller
             $news->organisation_id=$request->input('organisationId');
             $news->save();
             return response()->json(['success'=>1,'data'=> "File Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+    }
+    public function save_online_class(Request $request){
+        $question= new Onlineclass();
+        if(($request->input('courseId')) && ($request->input('subject_id')) && ($request->input('pasteUrl')))
+        {
+            $question->course_id=$request->input('courseId');
+            $question->subject_id=$request->input('subject_id');
+            $question ->online_class_url = $request->input('pasteUrl');
+            $question->organisation_id=$request->input('organisationId');
+            $question->uploaded_by=$request->input('uploaded_by');
+            $question->user_id=$request->input('user_id');
+            $question->save();
+            return response()->json(['success'=>1,'data'=> "Save Online Class Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->input('courseId')) && (!$request->input('subject_id')) && ($request->input('pasteUrl'))){
+            $question->course_id=$request->input('courseId');
+            $question ->online_class_url = $request->input('pasteUrl');
+            $question->organisation_id=$request->input('organisationId');
+            $question->uploaded_by=$request->input('uploaded_by');
+            $question->user_id=$request->input('user_id');
+            $question->save();
+            return response()->json(['success'=>1,'data'=> "Save Online Class Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if($request->input('pasteUrl')){
+            $question ->online_class_url = $request->input('pasteUrl');
+            $question->organisation_id=$request->input('organisationId');
+            $question->uploaded_by=$request->input('uploaded_by');
+            $question->user_id=$request->input('user_id');
+             $question->save();
+             return response()->json(['success'=>1,'data'=> "Save Online Class Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        
+    }
+    public function ebook_upload(Request $request){
+        $question= new Ebook();
+        if(($request->hasFile('image')) && ($request->input('courseId')) && ($request->input('subject_id')) && ($request->input('ebookDescription')))
+        {
+            //dd("It is working...");
+            $completeFileName=$request->file('image')->getClientOriginalName();
+            $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+            $extension=$request->file('image')->getClientOriginalExtension();
+            $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+            //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+            $path = $request->file('image')->move(public_path("/ebook_upload"), $compPic);
+            //return $this->successResponse($request->file('image'));
+
+            $question ->ebook_description = $request->input('ebookDescription');
+            $question->course_id=$request->input('courseId');
+            $question->subject_id=$request->input('subject_id');
+            $question->organisation_id=$request->input('organisationId');
+            $question->uploaded_by=$request->input('uploaded_by');
+            $question->file_url=$compPic;
+            $question->user_id=$request->input('user_id');
+            $question->save();
+            return response()->json(['success'=>1,'data'=> "E-book Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->hasFile('image')) && ($request->input('courseId')) && (!$request->input('subject_id')) && ($request->input('ebookDescription'))){
+            $completeFileName=$request->file('image')->getClientOriginalName();
+            $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+            $extension=$request->file('image')->getClientOriginalExtension();
+            $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+            //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+            $path = $request->file('image')->move(public_path("/ebook_upload"), $compPic);
+            //return $this->successResponse($request->file('image'));
+
+            $question ->ebook_description = $request->input('ebookDescription');
+            $question->course_id=$request->input('courseId');
+            $question->organisation_id=$request->input('organisationId');
+            $question->file_url=$compPic;
+            $question->uploaded_by=$request->input('uploaded_by');
+            $question->user_id=$request->input('user_id');
+            $question->save();
+            return response()->json(['success'=>1,'data'=> "E-book 1 Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->hasFile('image')) && ($request->input('ebookDescription'))){
+             //dd("It is working...");
+             
+             $completeFileName=$request->file('image')->getClientOriginalName();
+             $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+             $extension=$request->file('image')->getClientOriginalExtension();
+             $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+             //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+             $path = $request->file('image')->move(public_path("/ebook_upload"), $compPic);
+             //return $this->successResponse($request->file('image'));
+ 
+             $question ->ebook_description = $request->input('ebookDescription');
+             $question->organisation_id=$request->input('organisationId');
+             $question->uploaded_by=$request->input('uploaded_by');
+             $question->file_url=$compPic;
+             $question->user_id=$request->input('user_id');
+             $question->save();
+             return response()->json(['success'=>1,'data'=> "E-book 2 Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else if(($request->input('courseId')) && ($request->input('ebookDescription'))){
+            $question ->ebook_description = $request->input('ebookDescription');
+            $question->course_id=$request->input('courseId');
+            $question->organisation_id=$request->input('organisationId');
+            $question->uploaded_by=$request->input('uploaded_by');
+            $question->user_id=$request->input('user_id');
+            $question->save();
+            return response()->json(['success'=>1,'data'=> "E-book 3 Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
+        }
+        else{
+            $question ->ebook_description = $request->input('ebookDescription');
+            $question->organisation_id=$request->input('organisationId');
+            $question->uploaded_by=$request->input('uploaded_by');
+            $question->user_id=$request->input('user_id');
+            $question->save();
+            return response()->json(['success'=>1,'data'=> "E-book 4 Uploaded Successfully"], 200,[],JSON_NUMERIC_CHECK);
         }
     }
     public function question_paper_upload(Request $request){

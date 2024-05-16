@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Event\UserRegistered;
 use App\Http\Resources\LoginResource;
 use App\Models\User;
+use App\Models\ProfileImage;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ApiController;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,11 @@ class UserController extends ApiController
         //        event(new UserRegistered("This is a testing for event"));
         $user = User::all();
         return $this->successResponse($user);
+    }
+    public function get_profile_image_by_id($orgID,$ledgerId){
+        $result = DB::select("select id, ledger_id, organisation_id, image_url from profile_images
+        where ledger_id = '$ledgerId' AND organisation_id ='$orgID'");
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
 
     public function revoke_all(Request $request){
@@ -137,11 +143,40 @@ class UserController extends ApiController
         $result = $request->user()->currentAccessToken()->delete();
         return response()->json(['success'=>$result,'data'=>null, 'message'=>'Token revoked'], 200,[],JSON_NUMERIC_CHECK);
     }
+    function uploadUserPicture_test(Request $request){
+        //        $input = json_decode($request->getContent(), true);
+                    $profile= new ProfileImage();
+                    $fileName = $request['filename'];
 
+                    $completeFileName=$request->file('file')->getClientOriginalName();
+                    $fileNameOnly=pathinfo($completeFileName,PATHINFO_FILENAME);
+                    $extension=$request->file('filename')->getClientOriginalExtension();
+                    $compPic=str_replace('','_', $fileNameOnly). '_'. rand(). '_'.time(). '.' . $extension;
+                    //$path=$request->file('image')->storeAs('public/file_upload',$compPic);
+                    $path = $request->file('filename')->move(public_path("/profile_pic"), $compPic);
+                    //return $this->successResponse($request->file('image'));
+        
+                    $profile->ledger_id=$request->input('ledgerId');
+                    $profile->organisation_id=$request->input('organisationId');
+                    $profile->image_url=$compPic;
+                    
+                    $profile->save(); 
+                    return $this->successResponse($request->file('file'));
+        
+               
+        //        $fileName = 'test1.jpeg';
+        //        return $fileName;
+                //first saving picture
+        
+                //return $fileName;
+                //$path = $request->file('file')->move(public_path("/profile_pic"), $fileName);
+        //        $photoUrl = url('/entrant_pictures/' . $fileName);
+                
+        //        return response()->json(['success'=>100,'data'=> $path], 200,[],JSON_NUMERIC_CHECK);
+        
+            }
     function uploadUserPicture(Request $request){
 //        $input = json_decode($request->getContent(), true);
-
-
         $fileName = $request['filename'];
 //        $fileName = 'test1.jpeg';
 //        return $fileName;
