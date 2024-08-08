@@ -21,6 +21,62 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 class ReportController extends Controller
 {
+    public function get_all_present_attendance($orgID)
+    {
+        $result=DB::select("select date(attendances.created_at) as present_date,
+                            attendances.course_id,
+                            courses.full_name,
+                            attendances.section,
+                            count(*) as total_present
+                            FROM attendances
+                            inner join courses ON courses.id = attendances.course_id
+                            where attendances.present=1 and attendances.organisation_id='$orgID'
+                            group by date(attendances.created_at),
+                            attendances.course_id,
+                            courses.full_name,
+                            attendances.section
+                            order by attendances.created_at desc");
+                            
+                return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function get_student_for_attendance($orgID,$courseID,$sec)
+    {
+        $result = DB::select("select ledgers.id as ledgerId,
+                            ledgers.ledger_name,
+                            courses.id as courseId,
+                            courses.full_name,
+                            if(isnull(student_course_registrations.section),'-',student_course_registrations.section) as section,
+                            1 as present,
+                            student_course_registrations.organisation_id as organisationId
+                            from student_course_registrations
+                            inner join courses ON courses.id = student_course_registrations.course_id
+                            inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
+                            where student_course_registrations.is_completed=0 and student_course_registrations.is_started=1 and
+                            student_course_registrations.organisation_id='$orgID' 
+                            and courses.id='$courseID' and student_course_registrations.section='$sec'");
+
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+    public function get_student_for_attendance_by_course($orgID,$courseID)
+    {
+        $result = DB::select("select ledgers.id as ledgerId,
+                        ledgers.ledger_name,
+                        courses.id as courseId,
+                        courses.full_name,
+                        if(isnull(student_course_registrations.section),'-',student_course_registrations.section) as section,
+                        1 as present,
+                        student_course_registrations.organisation_id as organisationId
+                        from student_course_registrations
+                        inner join courses ON courses.id = student_course_registrations.course_id
+                        inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
+                        where student_course_registrations.is_completed=0 and student_course_registrations.is_started=1 and 
+                        student_course_registrations.organisation_id='$orgID' and courses.id='$courseID'");
+
+        
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
+                      
     public function get_pivot_table_for_admission($orgID)
     {
         $result = DB::select("select year(effective_date) AS YEAR,

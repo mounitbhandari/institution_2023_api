@@ -12,6 +12,7 @@ use App\Models\StudentCourseRegistration;
 use App\Models\TransactionDetail;
 use App\Models\TransactionMaster;
 use App\Models\WorkingDay;
+use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -930,10 +931,41 @@ if ($err) {
         }
     }
     //testing
+    // Save Attendance
+    public function save_attendance(Request $request)
+    {
+        DB::beginTransaction();
+        try{
+            $input=($request->json()->all());
+            $input_attendance_details=($input['attendanceDetails']);
+            $attendance_details=array();
+                foreach($input_attendance_details as $attendance_detail){
+                    $detail = (object)$attendance_detail;
+                    $td = new Attendance();
+                    $td->ledger_id = $detail->ledgerId;
+                    $td->course_id = $detail->courseId;
+                    $td->section = $detail->section;
+                    $td->present = $detail->present;
+                    $td->organisation_id = $detail->organisationId;
+                    $td->save();
+                    $attendance_details[]=$td;
+                }
+                $result_array['attendance_details']=$attendance_details;
+                DB::commit();
+
+        }catch(\Exception $e){
+            DB::rollBack();
+            return response()->json(['success'=>0,'exception'=>$e->getMessage()], 500);
+        }
+
+        return response()->json(['success'=>1,'data'=>($result_array['attendance_details'])], 200,[],JSON_NUMERIC_CHECK);
+       
+    }
     //saving fees charging to student
     public function save_fees_charge(Request $request)
     {
         $input=($request->json()->all());
+       
 
         $validator = Validator::make($input,[
             'transactionMaster' => 'required',

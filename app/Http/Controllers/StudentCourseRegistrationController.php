@@ -143,7 +143,7 @@ class StudentCourseRegistrationController extends Controller
          ledgers.ledger_name as studentName,ledgers.qualification
          from student_course_registrations
          inner join ledgers on ledgers.id = student_course_registrations.ledger_id
-         where student_course_registrations.organisation_id='$orgID' and ledgers.is_student=1
+         where student_course_registrations.organisation_id='$orgID' and ledgers.is_student=1 and student_course_registrations.is_completed=0
          group by student_course_registrations.ledger_id,ledgers.ledger_name,ledgers.qualification"); 
 
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
@@ -156,7 +156,7 @@ class StudentCourseRegistrationController extends Controller
          from student_course_registrations
          inner join ledgers on ledgers.id = student_course_registrations.ledger_id
          inner join courses ON courses.id = student_course_registrations.course_id
-         where student_course_registrations.organisation_id='$orgID' and ledgers.is_student=1
+         where student_course_registrations.organisation_id='$orgID' and ledgers.is_student=1 and student_course_registrations.is_completed=0
          and courses.fees_mode_type_id=1
          group by student_course_registrations.ledger_id,ledgers.ledger_name,ledgers.qualification"); 
 
@@ -184,7 +184,7 @@ class StudentCourseRegistrationController extends Controller
         inner join transaction_masters on transaction_masters.student_course_registration_id = student_course_registrations.id
         inner join courses ON courses.id = student_course_registrations.course_id
         inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
-        where student_course_registrations.organisation_id='$orgID' and transaction_masters.is_course_fees=1
+        where student_course_registrations.organisation_id='$orgID' and transaction_masters.is_course_fees=1 and student_course_registrations.is_completed=0
         order by transaction_masters.created_at desc"); 
         //$courseRegistration= StudentCourseRegistration::get();
         /*  $result = DB::table('student_course_registrations')
@@ -221,6 +221,8 @@ class StudentCourseRegistrationController extends Controller
             ->join('courses', 'courses.id', '=', 'student_course_registrations.course_id')
             ->where('student_course_registrations.ledger_id', '=', $ledgerId)
             ->where('student_course_registrations.organisation_id', '=', $orgID)
+            ->where('student_course_registrations.is_completed', '=', 0)
+            ->where('student_course_registrations.is_started', '=', 1)
             ->select('student_course_registrations.id', 
             'student_course_registrations.ledger_id',
             'student_course_registrations.course_id',

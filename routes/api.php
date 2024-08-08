@@ -19,6 +19,7 @@ use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\CourseFeesController;
 use App\Http\Controllers\MarksheetController;
 use App\Http\Controllers\PhonepeController;
+use App\Http\Controllers\AttendanceController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -59,6 +60,11 @@ Route::post("/getStudentAssignmentList",[ReportController::class, 'get_student_a
 Route::post("/getStudentQuestionPaperList",[ReportController::class, 'get_student_question_paper_list']);
 Route::post("/getStudentEbookList",[ReportController::class, 'get_student_ebook_list']);
 Route::post("/getStudentOnlineClassList",[ReportController::class, 'get_student_online_class_list']);
+
+Route::get("/getStudentAttendance/{orgId}/{courseID}/{sec}",[ReportController::class, 'get_student_for_attendance']);
+Route::get("/getStudentAttendanceByCourse/{orgId}/{courseID}",[ReportController::class, 'get_student_for_attendance_by_course']);
+Route::get("/getAllPresentAttendance/{orgId}",[ReportController::class, 'get_all_present_attendance']);
+Route::post("saveAttendance",[TransactionController::class,'save_attendance']);
 
 Route::get("getMarks",[MarksheetController::class,'index']);
 Route::post("saveMarks",[MarksheetController::class,'store']);
@@ -342,6 +348,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::post("/getStudentSyllabusList",[ReportController::class, 'get_student_syllabus_list']);
     Route::post("/getStudentAssignmentList",[ReportController::class, 'get_student_assignment_list']);
 
+    Route::get("/getStudentAttendance/{orgId}",[ReportController::class, 'get_student_for_attendance']);
     Route::get("/getPivotTableAdmissionList/{id}",[ReportController::class, 'get_pivot_table_for_admission']);
     Route::post("/fileUpload",[ReportController::class, 'file_upload']);
 
