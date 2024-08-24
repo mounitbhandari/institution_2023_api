@@ -118,7 +118,7 @@ class ReportController extends Controller
             order by news.id desc limit 6");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        } else if (!$existsId){
+        } /* else if (!$existsId){
             $result = DB::select("select  id,
             news_description,file_url,
             inforce, 
@@ -129,7 +129,7 @@ class ReportController extends Controller
             and course_id is null order by news.id desc limit 6");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        }
+        } */
         
     }
     public function get_student_syllabus_list(Request $request)
@@ -151,7 +151,7 @@ class ReportController extends Controller
             order by syllabi.id desc");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        } else if (!$existsId){
+        } /* else if (!$existsId){
             $result = DB::select("select  id,
             syllabus_description,file_url,
             inforce, 
@@ -162,7 +162,7 @@ class ReportController extends Controller
             and course_id is null order by syllabi.id desc");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        }
+        } */
         
     }
     public function get_student_assignment_list(Request $request)
@@ -193,7 +193,7 @@ class ReportController extends Controller
             order by assignments.id desc");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        } else if (!$existsId){
+        } /* else if (!$existsId){
             $result = DB::select("select assignments.id,
             assignments.assignment_description,
             assignments.file_url,
@@ -213,7 +213,7 @@ class ReportController extends Controller
             order by assignments.id desc");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        }
+        } */
         
     }
     public function get_student_online_class_list(Request $request)
@@ -243,7 +243,7 @@ class ReportController extends Controller
             order by onlineclasses.id desc");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        } else if (!$existsId){
+        } /* else if (!$existsId){
             $result = DB::select("select onlineclasses.id,
             onlineclasses.online_class_url,
             subjects.subject_full_name ,
@@ -262,7 +262,7 @@ class ReportController extends Controller
             order by onlineclasses.id desc");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        }
+        } */
         
     }
     public function get_student_ebook_list(Request $request)
@@ -293,7 +293,7 @@ class ReportController extends Controller
             order by ebooks.id desc");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        } else if (!$existsId){
+        } /* else if (!$existsId){
             $result = DB::select("select ebooks.id,
             ebooks.ebook_description,
             ebooks.file_url,
@@ -313,7 +313,7 @@ class ReportController extends Controller
             order by ebooks.id desc");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        }
+        } */
         
     }
     public function get_student_question_paper_list(Request $request)
@@ -344,7 +344,7 @@ class ReportController extends Controller
             order by question_papers.id desc");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        } else if (!$existsId){
+        } /* else if (!$existsId){
             $result = DB::select("select question_papers.id,
             question_papers.question_description,
             question_papers.file_url,
@@ -364,7 +364,7 @@ class ReportController extends Controller
             order by question_papers.id desc");
             
             return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
-        }
+        } */
         
     }
     public function update_news_statusById(Request $request){
