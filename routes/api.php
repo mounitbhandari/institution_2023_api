@@ -320,6 +320,10 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
         //saving fees received
         Route::post("/feesReceived",[TransactionController::class, 'save_fees_received']);
 
+         //saving Payment
+         Route::post("/payment",[TransactionController::class, 'save_payment']);
+         
+         Route::get("/getPaymentHead",[TransactionController::class, 'get_payment_head']);
 
         //saving fees received in Adjustment
         Route::post("/feesReceivedAdvancedAdjustment",[TransactionController::class, 'save_advanced_fees_received_adjustment']);
@@ -372,6 +376,7 @@ Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::get('/reportStudentBirthday/{id}',[ReportController::class,'get_student_birthday_report']);
     Route::get('/reportUpcomingDueList/{id}',[ReportController::class,'get_upcoming_due_list_report']);
     Route::get('/reportStudentToCourseRegistrationList/{id}',[ReportController::class,'get_student_to_course_registration_report']);
+    Route::get('/reportDropStudentToCourseRegistrationList/{id}',[ReportController::class,'get_drop_student_to_course_registration_report']);
     Route::get('/reportStudentToCourseRegistrationListLedgerId/{id}',[ReportController::class,'get_student_to_course_registration_report_by_ledger_id']);
     Route::post('/getAllIncomeListReport',[ReportController::class,'get_all_income_list_report']);
     Route::get('/getPivotTableIncomeListReport/{id}',[ReportController::class,'get_pivot_table_income_list_report']);
@@ -480,6 +485,10 @@ Route::group(array('prefix' => 'dev'), function() {
 
         //saving fees received
         Route::post("/feesReceived",[TransactionController::class, 'save_fees_received']);
+
+         //saving Payment
+         Route::post("/payment",[TransactionController::class, 'save_payment']);
+         Route::get("/getPaymentHead",[TransactionController::class, 'get_payment_head']);
 
         Route::get("/billDetails/id/{id}",[TransactionController::class, 'get_bill_details_by_id']);
     });

@@ -53,9 +53,7 @@ class ReportController extends Controller
                             inner join ledgers ON ledgers.id = student_course_registrations.ledger_id
                             where student_course_registrations.is_completed=0 and student_course_registrations.is_started=1 and
                             student_course_registrations.organisation_id='$orgID' 
-                            and courses.id='$courseID' and student_course_registrations.section='$sec'");
-
-        
+                            and courses.id='$courseID' and student_course_registrations.section='$sec'");   
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
     public function get_student_for_attendance_by_course($orgID,$courseID)
@@ -950,6 +948,38 @@ class ReportController extends Controller
         return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
     }
 
+    public function get_drop_student_to_course_registration_report($orgID)
+    {
+        //$courseRegistration= StudentCourseRegistration::get();
+         $result = DB::table('student_course_registrations')
+            ->join('courses', 'courses.id', '=', 'student_course_registrations.course_id')
+            ->join('fees_mode_types', 'fees_mode_types.id', '=', 'courses.fees_mode_type_id')
+            ->join('ledgers', 'ledgers.id', '=', 'student_course_registrations.ledger_id')
+            ->where('student_course_registrations.organisation_id', '=', $orgID)
+            ->where('student_course_registrations.is_completed', '=', 1)
+            ->where('ledgers.is_student', '=', 1)
+            ->orderBy('student_course_registrations.id','desc')
+            ->select('student_course_registrations.id', 
+            'student_course_registrations.ledger_id',
+            'student_course_registrations.course_id',
+            'student_course_registrations.discount_allowed',
+            'student_course_registrations.joining_date',
+            'student_course_registrations.effective_date',
+            'student_course_registrations.actual_course_duration',
+            'student_course_registrations.duration_type_id',
+            'ledgers.ledger_name',
+            'courses.full_name',
+            'ledgers.whatsapp_number',
+            'fees_mode_types.fees_mode_type_name',
+            DB::raw('if(student_course_registrations.is_completed,"Completed","Not Completed") as is_completed'),
+            DB::raw('get_total_course_fees_by_studentregistration(student_course_registrations.id) as total_course_fees'),
+            DB::raw('get_total_received_by_studentregistration(student_course_registrations.id) as total_received'),
+            DB::raw('get_total_due_by_student_registration_id(student_course_registrations.id) as total_due')
+             )
+            ->get(); 
+
+        return response()->json(['success'=>1,'data'=> $result], 200,[],JSON_NUMERIC_CHECK);
+    }
     public function get_student_to_course_registration_report($orgID)
     {
         //$courseRegistration= StudentCourseRegistration::get();
